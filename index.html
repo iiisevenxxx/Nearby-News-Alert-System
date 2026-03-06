@@ -7,7 +7,13 @@
   <body>
     <h1>Nearby News & Alert System</h1>
 
-    <button id="loginBtn">Login (Google)</button>
+    <h2>Login / Signup (Email)</h2>
+    <input id="emailInput" type="email" placeholder="Email" />
+    <br />
+    <input id="passwordInput" type="password" placeholder="Password" />
+    <br />
+    <button id="signupBtn">Sign up</button>
+    <button id="loginBtn">Login</button>
     <button id="logoutBtn" style="display:none;">Logout</button>
 
     <p id="userInfo"></p>
@@ -23,12 +29,10 @@
     <button id="loadNearbyBtn">Load nearby news</button>
     <ul id="newsList"></ul>
 
-    <!-- Firebase JS SDKs (v8 compat) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    <!-- Our config + app code (no modules) -->
     <script src="firebaseConfig.js"></script>
     <script src="app.js"></script>
   </body>
