@@ -1,5 +1,3 @@
-import { firebaseConfig } from "./firebaseConfig.js";
-
 document.addEventListener("DOMContentLoaded", () => {
   const loginBtn = document.getElementById("loginBtn");
   const logoutBtn = document.getElementById("logoutBtn");
@@ -15,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Firebase init (CDN v8 compat)
   if (window.firebase && window.firebase.initializeApp) {
-    firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(window.firebaseConfig);
     db = firebase.firestore();
   } else {
     userInfo.textContent = "Firebase SDK not loaded.";
@@ -125,7 +123,6 @@ document.addEventListener("DOMContentLoaded", () => {
           newsList.innerHTML = "";
           snap.forEach((doc) => {
             const data = doc.data();
-            const dLat = data.location.latitude;
             const dLng = data.location.longitude;
 
             if (dLng >= lng - radius && dLng <= lng + radius) {
