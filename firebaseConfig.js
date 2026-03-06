@@ -1,4 +1,5 @@
-// firebaseConfig.js
+// Firebase config for Nearby News & Alert System
+
 export const firebaseConfig = {
   apiKey: "AIzaSyAidKMs67_gh4xNLQXiNyDwE4AbhrbvZ7M",
   authDomain: "nearby-news-alert-system.firebaseapp.com",
