@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const emailInput = document.getElementById("emailInput");
+  const passwordInput = document.getElementById("passwordInput");
+  const signupBtn = document.getElementById("signupBtn");
   const loginBtn = document.getElementById("loginBtn");
   const logoutBtn = document.getElementById("logoutBtn");
   const userInfo = document.getElementById("userInfo");
@@ -11,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentUser = null;
   let db;
 
-  // Firebase init (CDN v8 compat)
   if (window.firebase && window.firebase.initializeApp) {
     firebase.initializeApp(window.firebaseConfig);
     db = firebase.firestore();
@@ -20,32 +22,57 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  const provider = new firebase.auth.GoogleAuthProvider();
-
   // Auth state change
   firebase.auth().onAuthStateChanged((user) => {
     currentUser = user;
     if (user) {
-      userInfo.textContent = "Logged in as " + (user.displayName || user.email);
+      userInfo.textContent = "Logged in as " + (user.email || "unknown");
+      signupBtn.style.display = "none";
       loginBtn.style.display = "none";
       logoutBtn.style.display = "inline-block";
     } else {
       userInfo.textContent = "Not logged in.";
+      signupBtn.style.display = "inline-block";
       loginBtn.style.display = "inline-block";
       logoutBtn.style.display = "none";
     }
   });
 
-  loginBtn.addEventListener("click", () => {
+  // Signup
+  signupBtn.addEventListener("click", () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    if (!email || !password) {
+      alert("Please fill email & password.");
+      return;
+    }
     firebase
       .auth()
-      .signInWithPopup(provider)
+      .createUserWithEmailAndPassword(email, password)
+      .catch((e) => {
+        console.error(e);
+        alert("Signup error: " + e.message);
+      });
+  });
+
+  // Login
+  loginBtn.addEventListener("click", () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    if (!email || !password) {
+      alert("Please fill email & password.");
+      return;
+    }
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
       .catch((e) => {
         console.error(e);
         alert("Login error: " + e.message);
       });
   });
 
+  // Logout
   logoutBtn.addEventListener("click", () => {
     firebase
       .auth()
@@ -102,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 
-  // Load nearby posts (simple bounding box)
+  // Load nearby posts
   loadNearbyBtn.addEventListener("click", () => {
     if (!navigator.geolocation) {
       alert("Geolocation not supported.");
@@ -113,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
       async (pos) => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
-        const radius = 0.1; // approx degrees
+        const radius = 0.1;
 
         const minLat = lat - radius;
         const maxLat = lat + radius;
