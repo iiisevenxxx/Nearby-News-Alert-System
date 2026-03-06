@@ -114,6 +114,13 @@ li {
   border: 1px solid #1f2937;
 }
 
+/* news images */
+.news-image {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-top: 4px;
+}
+
 /* Tablet / laptop ke liye thoda wide layout */
 @media (min-width: 768px) {
   .container {
