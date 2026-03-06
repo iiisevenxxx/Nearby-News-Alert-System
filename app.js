@@ -7,16 +7,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const userInfo = document.getElementById("userInfo");
   const titleInput = document.getElementById("titleInput");
   const contentInput = document.getElementById("contentInput");
+  const imageInput = document.getElementById("imageInput");
   const postBtn = document.getElementById("postBtn");
   const loadNearbyBtn = document.getElementById("loadNearbyBtn");
   const newsList = document.getElementById("newsList");
 
   let currentUser = null;
   let db;
+  let storage;
 
   if (window.firebase && window.firebase.initializeApp) {
     firebase.initializeApp(window.firebaseConfig);
     db = firebase.firestore();
+    storage = firebase.storage();
   } else {
     userInfo.textContent = "Firebase SDK not loaded.";
     return;
@@ -103,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   });
 
-  // Create post with location
+  // Create post with location + optional image
   postBtn.addEventListener("click", () => {
     if (!currentUser) {
       alert("Please login first.");
@@ -116,6 +119,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const title = titleInput.value.trim();
     const content = contentInput.value.trim();
+    const file = imageInput ? imageInput.files[0] : null;
+
     if (!title || !content) {
       alert("Please fill title & details.");
       return;
@@ -127,16 +132,30 @@ document.addEventListener("DOMContentLoaded", () => {
         const lng = pos.coords.longitude;
 
         try {
+          let imageUrl = null;
+
+          // Agar photo select hai to pehle Storage me upload karo
+          if (file) {
+            const fileName =
+              Date.now() + "_" + file.name.replace(/\s+/g, "_");
+            const storageRef = storage.ref().child("news_images/" + fileName);
+            await storageRef.put(file); // upload file[web:100]
+            imageUrl = await storageRef.getDownloadURL(); // URL nikaalo[web:106]
+          }
+
           await db.collection("posts").add({
             title,
             content,
             userId: currentUser.uid,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            location: new firebase.firestore.GeoPoint(lat, lng)
+            location: new firebase.firestore.GeoPoint(lat, lng),
+            imageUrl: imageUrl
           });
+
           alert("Post created.");
           titleInput.value = "";
           contentInput.value = "";
+          if (imageInput) imageInput.value = "";
         } catch (e) {
           console.error(e);
           alert("Error creating post: " + e.message);
@@ -149,7 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 
-  // Load posts + distance from current user (km + meters)
+  // Load posts + distance + image
   loadNearbyBtn.addEventListener("click", () => {
     if (!navigator.geolocation) {
       alert("Geolocation not supported.");
@@ -196,6 +215,17 @@ document.addEventListener("DOMContentLoaded", () => {
               " - " +
               (data.content || "") +
               distanceText;
+
+            // Agar imageUrl hai to image add karo
+            if (data.imageUrl) {
+              const img = document.createElement("img");
+              img.src = data.imageUrl;
+              img.alt = data.title || "news image";
+              img.className = "news-image";
+              li.appendChild(document.createElement("br"));
+              li.appendChild(img);
+            }
+
             newsList.appendChild(li);
           });
 
