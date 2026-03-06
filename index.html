@@ -3,31 +3,55 @@
   <head>
     <meta charset="utf-8" />
     <title>Nearby News & Alert System</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Nearby News & Alert System</h1>
+    <div class="container">
+      <h1>Nearby News & Alert System</h1>
 
-    <h2>Login / Signup (Email)</h2>
-    <input id="emailInput" type="email" placeholder="Email" />
-    <br />
-    <input id="passwordInput" type="password" placeholder="Password" />
-    <br />
-    <button id="signupBtn">Sign up</button>
-    <button id="loginBtn">Login</button>
-    <button id="logoutBtn" style="display:none;">Logout</button>
+      <div class="card">
+        <h2>Login / Signup (Email)</h2>
+        <div class="field">
+          <label for="emailInput">Email</label>
+          <input id="emailInput" type="email" placeholder="you@example.com" />
+        </div>
+        <div class="field">
+          <label for="passwordInput">Password</label>
+          <input
+            id="passwordInput"
+            type="password"
+            placeholder="Min 6 characters"
+          />
+        </div>
+        <button id="signupBtn" class="secondary">Sign up</button>
+        <button id="loginBtn" class="primary">Login</button>
+        <button id="logoutBtn" class="secondary" style="display:none;">
+          Logout
+        </button>
+        <p id="userInfo"></p>
+      </div>
 
-    <p id="userInfo"></p>
+      <div class="card">
+        <h2>Create News</h2>
+        <div class="field">
+          <label for="titleInput">Title</label>
+          <input id="titleInput" placeholder="News title" />
+        </div>
+        <div class="field">
+          <label for="contentInput">Details</label>
+          <textarea id="contentInput" placeholder="Describe the news"></textarea>
+        </div>
+        <button id="postBtn" class="primary">Post with my location</button>
+      </div>
 
-    <h2>Create News</h2>
-    <input id="titleInput" placeholder="Title" />
-    <br />
-    <textarea id="contentInput" placeholder="Details"></textarea>
-    <br />
-    <button id="postBtn">Post with my location</button>
-
-    <h2>Nearby News</h2>
-    <button id="loadNearbyBtn">Load nearby news</button>
-    <ul id="newsList"></ul>
+      <div class="card">
+        <h2>Nearby News</h2>
+        <button id="loadNearbyBtn" class="secondary">
+          Load nearby news
+        </button>
+        <ul id="newsList"></ul>
+      </div>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
