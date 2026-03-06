@@ -3,33 +3,35 @@ body {
     sans-serif;
   margin: 0;
   padding: 0;
-  background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+  background: #0f172a;
 }
 
 .container {
-  max-width: 900px;
+  max-width: 480px; /* phone width focus */
   margin: 0 auto;
-  padding: 16px;
+  padding: 12px;
 }
 
 h1 {
   text-align: center;
-  margin-bottom: 16px;
-  color: #ffffff;
+  margin: 12px 0 16px;
+  color: #e5e7eb;
+  font-size: 22px;
 }
 
 .card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
-  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: #020617;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.5);
 }
 
 .card h2 {
   margin-top: 0;
-  font-size: 18px;
+  font-size: 16px;
+  color: #e5e7eb;
 }
 
 .field {
@@ -38,8 +40,9 @@ h1 {
 
 .field label {
   display: block;
-  font-size: 14px;
+  font-size: 13px;
   margin-bottom: 4px;
+  color: #cbd5f5;
 }
 
 .field input,
@@ -47,62 +50,83 @@ h1 {
   width: 100%;
   box-sizing: border-box;
   padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  border: 1px solid #1f2937;
   font-size: 14px;
+  background: #020617;
+  color: #e5e7eb;
 }
 
 .field textarea {
-  min-height: 80px;
+  min-height: 70px;
   resize: vertical;
 }
 
+.field input::placeholder,
+.field textarea::placeholder {
+  color: #6b7280;
+}
+
 button {
-  padding: 10px 14px;
+  padding: 9px 12px;
   border-radius: 999px;
   border: none;
   cursor: pointer;
   font-size: 14px;
-  margin-right: 8px;
   margin-top: 8px;
+  width: 100%;           /* phone: full width buttons */
+  display: block;
+}
+
+button + button {
+  margin-top: 6px;
 }
 
 button.primary {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   color: white;
 }
 
 button.secondary {
-  background: #e5e7eb;
-  color: #111827;
+  background: #111827;
+  color: #e5e7eb;
 }
 
 #userInfo {
-  font-size: 14px;
-  color: #4b5563;
+  font-size: 13px;
+  color: #9ca3af;
   margin-top: 8px;
 }
 
 ul {
-  padding-left: 16px;
+  padding-left: 0;
+  list-style: none;
 }
 
 li {
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #e5e7eb;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #020617;
+  border: 1px solid #1f2937;
 }
 
-/* Mobile */
-@media (max-width: 600px) {
+/* Laptop/tablet ke liye thoda wide kar do */
+@media (min-width: 768px) {
   .container {
-    padding: 12px;
-  }
-
-  .card {
-    padding: 14px;
+    max-width: 720px;
+    padding: 16px;
   }
 
   button {
-    width: 100%;
-    margin-right: 0;
+    width: auto;
+    display: inline-block;
+    margin-right: 8px;
+  }
+
+  button + button {
+    margin-top: 0;
   }
 }
