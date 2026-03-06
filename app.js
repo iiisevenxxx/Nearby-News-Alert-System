@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // Auth state change
+  // Auth state
   firebase.auth().onAuthStateChanged((user) => {
     currentUser = user;
     if (user) {
@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   });
 
-  // Create post with current location
+  // Create post with location
   postBtn.addEventListener("click", () => {
     if (!currentUser) {
       alert("Please login first.");
