@@ -37,17 +37,23 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   loginBtn.addEventListener("click", () => {
-    firebase.auth().signInWithPopup(provider).catch((e) => {
-      console.error(e);
-      alert("Login error");
-    });
+    firebase
+      .auth()
+      .signInWithPopup(provider)
+      .catch((e) => {
+        console.error(e);
+        alert("Login error: " + e.message);
+      });
   });
 
   logoutBtn.addEventListener("click", () => {
-    firebase.auth().signOut().catch((e) => {
-      console.error(e);
-      alert("Logout error");
-    });
+    firebase
+      .auth()
+      .signOut()
+      .catch((e) => {
+        console.error(e);
+        alert("Logout error: " + e.message);
+      });
   });
 
   // Create post with current location
@@ -86,12 +92,12 @@ document.addEventListener("DOMContentLoaded", () => {
           contentInput.value = "";
         } catch (e) {
           console.error(e);
-          alert("Error creating post.");
+          alert("Error creating post: " + e.message);
         }
       },
       (err) => {
         console.error(err);
-        alert("Location error.");
+        alert("Location error: " + err.message);
       }
     );
   });
@@ -137,12 +143,12 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         } catch (e) {
           console.error(e);
-          alert("Error loading nearby news.");
+          alert("Error loading nearby news: " + e.message);
         }
       },
       (err) => {
         console.error(err);
-        alert("Location error.");
+        alert("Location error: " + err.message);
       }
     );
   });
