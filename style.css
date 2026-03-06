@@ -3,11 +3,11 @@ body {
     sans-serif;
   margin: 0;
   padding: 0;
-  background: #f3f4f6;
+  background: linear-gradient(135deg, #1d4ed8, #3b82f6);
 }
 
 .container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 16px;
 }
@@ -15,14 +15,16 @@ body {
 h1 {
   text-align: center;
   margin-bottom: 16px;
+  color: #ffffff;
 }
 
 .card {
   background: #ffffff;
-  border-radius: 8px;
+  border-radius: 16px;
   padding: 16px;
   margin-bottom: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.4);
 }
 
 .card h2 {
@@ -56,17 +58,17 @@ h1 {
 }
 
 button {
-  padding: 8px 12px;
-  border-radius: 4px;
+  padding: 10px 14px;
+  border-radius: 999px;
   border: none;
   cursor: pointer;
   font-size: 14px;
   margin-right: 8px;
-  margin-top: 4px;
+  margin-top: 8px;
 }
 
 button.primary {
-  background: #2563eb;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: white;
 }
 
@@ -87,4 +89,20 @@ ul {
 
 li {
   margin-bottom: 4px;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .container {
+    padding: 12px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  button {
+    width: 100%;
+    margin-right: 0;
+  }
 }
