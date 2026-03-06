@@ -14,12 +14,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentUser = null;
   let db;
-  let storage;
 
   if (window.firebase && window.firebase.initializeApp) {
     firebase.initializeApp(window.firebaseConfig);
     db = firebase.firestore();
-    storage = firebase.storage();
   } else {
     userInfo.textContent = "Firebase SDK not loaded.";
     return;
@@ -43,6 +41,33 @@ document.addEventListener("DOMContentLoaded", () => {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const d = R * c;
     return d;
+  }
+
+  // ImgBB API key (DEMO ONLY – apni real key daalo)
+  const IMGBB_API_KEY = "626612f93c87680ce07cd7ab1406725c";
+
+  async function uploadToImgBB(file) {
+    if (!file) return null;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const url = "https://api.imgbb.com/1/upload?key=" + IMGBB_API_KEY;
+
+    const res = await fetch(url, {
+      method: "POST",
+      body: formData
+    });
+
+    if (!res.ok) {
+      throw new Error("ImgBB upload failed: " + res.status);
+    }
+
+    const data = await res.json();
+    if (data && data.data && data.data.url) {
+      return data.data.url;
+    }
+    throw new Error("ImgBB response invalid");
   }
 
   // Auth state
@@ -106,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   });
 
-  // Create post with location + optional image
+  // Create post with location + optional image via ImgBB
   postBtn.addEventListener("click", () => {
     if (!currentUser) {
       alert("Please login first.");
@@ -134,13 +159,8 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
           let imageUrl = null;
 
-          // Agar photo select hai to pehle Storage me upload karo
           if (file) {
-            const fileName =
-              Date.now() + "_" + file.name.replace(/\s+/g, "_");
-            const storageRef = storage.ref().child("news_images/" + fileName);
-            await storageRef.put(file); // upload file[web:100]
-            imageUrl = await storageRef.getDownloadURL(); // URL nikaalo[web:106]
+            imageUrl = await uploadToImgBB(file);
           }
 
           await db.collection("posts").add({
@@ -216,7 +236,6 @@ document.addEventListener("DOMContentLoaded", () => {
               (data.content || "") +
               distanceText;
 
-            // Agar imageUrl hai to image add karo
             if (data.imageUrl) {
               const img = document.createElement("img");
               img.src = data.imageUrl;
