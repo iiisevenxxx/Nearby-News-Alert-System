@@ -1,11 +1,10 @@
-// Firebase config placeholder
-// Firebase console se apna config copy karke yaha values replace karna
-
+// firebaseConfig.js
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAidKMs67_gh4xNLQXiNyDwE4AbhrbvZ7M",
+  authDomain: "nearby-news-alert-system.firebaseapp.com",
+  projectId: "nearby-news-alert-system",
+  storageBucket: "nearby-news-alert-system.firebasestorage.app",
+  messagingSenderId: "505694440391",
+  appId: "1:505694440391:web:89f49491abbf45197fa7e2",
+  measurementId: "G-4C2GH1B406"
 };
