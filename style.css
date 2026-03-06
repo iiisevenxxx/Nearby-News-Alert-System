@@ -6,8 +6,9 @@ body {
   background: #0f172a;
 }
 
+/* Phone-first: full width container */
 .container {
-  max-width: 480px; /* phone width focus */
+  max-width: 100%;
   margin: 0 auto;
   padding: 12px;
 }
@@ -74,7 +75,7 @@ button {
   cursor: pointer;
   font-size: 14px;
   margin-top: 8px;
-  width: 100%;           /* phone: full width buttons */
+  width: 100%;
   display: block;
 }
 
@@ -113,7 +114,7 @@ li {
   border: 1px solid #1f2937;
 }
 
-/* Laptop/tablet ke liye thoda wide kar do */
+/* Tablet / laptop ke liye thoda wide layout */
 @media (min-width: 768px) {
   .container {
     max-width: 720px;
