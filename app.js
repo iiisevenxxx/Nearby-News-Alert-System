@@ -22,6 +22,26 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  // Distance helper (km)
+  function haversineDistance(lat1, lon1, lat2, lon2) {
+    const toRad = (x) => (x * Math.PI) / 180;
+    const R = 6371; // km
+
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c;
+    return d;
+  }
+
   // Auth state
   firebase.auth().onAuthStateChanged((user) => {
     currentUser = user;
@@ -129,30 +149,67 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 
-  // Load posts (abhi ke liye: saare posts latest first)
-  loadNearbyBtn.addEventListener("click", async () => {
-    try {
-      const snap = await db
-        .collection("posts")
-        .orderBy("createdAt", "desc")
-        .limit(20)
-        .get();
-
-      newsList.innerHTML = "";
-      snap.forEach((doc) => {
-        const data = doc.data();
-        const li = document.createElement("li");
-        li.textContent =
-          (data.title || "No title") + " - " + (data.content || "");
-        newsList.appendChild(li);
-      });
-
-      if (!newsList.children.length) {
-        newsList.innerHTML = "<li>No nearby news.</li>";
-      }
-    } catch (e) {
-      console.error(e);
-      alert("Error loading news: " + e.message);
+  // Load posts + distance from current user
+  loadNearbyBtn.addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation not supported.");
+      return;
     }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const userLat = pos.coords.latitude;
+        const userLng = pos.coords.longitude;
+
+        try {
+          const snap = await db
+            .collection("posts")
+            .orderBy("createdAt", "desc")
+            .limit(20)
+            .get();
+
+          newsList.innerHTML = "";
+          snap.forEach((doc) => {
+            const data = doc.data();
+            const loc = data.location;
+            let distanceText = "";
+
+            if (
+              loc &&
+              typeof loc.latitude === "number" &&
+              typeof loc.longitude === "number"
+            ) {
+              const distKm = haversineDistance(
+                userLat,
+                userLng,
+                loc.latitude,
+                loc.longitude
+              );
+              const rounded = Math.round(distKm * 10) / 10;
+              distanceText = ` (${rounded} km away)`;
+            }
+
+            const li = document.createElement("li");
+            li.textContent =
+              (data.title || "No title") +
+              " - " +
+              (data.content || "") +
+              distanceText;
+            newsList.appendChild(li);
+          });
+
+          if (!newsList.children.length) {
+            newsList.innerHTML = "<li>No nearby news.</li>";
+          }
+        } catch (e) {
+          console.error(e);
+          alert("Error loading news: " + e.message);
+        }
+      },
+      (err) => {
+        console.error(err);
+        alert("Location error: " + err.message);
+      }
+    );
   });
 });
