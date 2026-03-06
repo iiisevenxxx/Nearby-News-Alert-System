@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 
-  // Load posts + distance from current user
+  // Load posts + distance from current user (km + meters)
   loadNearbyBtn.addEventListener("click", () => {
     if (!navigator.geolocation) {
       alert("Geolocation not supported.");
@@ -185,8 +185,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 loc.latitude,
                 loc.longitude
               );
-              const rounded = Math.round(distKm * 10) / 10;
-              distanceText = ` (${rounded} km away)`;
+              const roundedKm = Math.round(distKm * 10) / 10;
+              const distM = Math.round(distKm * 1000);
+              distanceText = ` (${roundedKm} km, ${distM} m away)`;
             }
 
             const li = document.createElement("li");
