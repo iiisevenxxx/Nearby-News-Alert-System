@@ -1,4 +1,5 @@
 // Firebase config for Nearby News & Alert System
+// NOTE: No 'export' here – we attach to window.
 
 window.firebaseConfig = {
   apiKey: "AIzaSyAidKMs67_gh4xNLQXiNyDwE4AbhrbvZ7M",
