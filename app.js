@@ -129,54 +129,30 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   });
 
-  // Load nearby posts
-  loadNearbyBtn.addEventListener("click", () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation not supported.");
-      return;
-    }
+  // Load posts (abhi ke liye: saare posts latest first)
+  loadNearbyBtn.addEventListener("click", async () => {
+    try {
+      const snap = await db
+        .collection("posts")
+        .orderBy("createdAt", "desc")
+        .limit(20)
+        .get();
 
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        const radius = 0.1;
+      newsList.innerHTML = "";
+      snap.forEach((doc) => {
+        const data = doc.data();
+        const li = document.createElement("li");
+        li.textContent =
+          (data.title || "No title") + " - " + (data.content || "");
+        newsList.appendChild(li);
+      });
 
-        const minLat = lat - radius;
-        const maxLat = lat + radius;
-
-        try {
-          const snap = await db
-            .collection("posts")
-            .where("location.latitude", ">=", minLat)
-            .where("location.latitude", "<=", maxLat)
-            .orderBy("location.latitude")
-            .get();
-
-          newsList.innerHTML = "";
-          snap.forEach((doc) => {
-            const data = doc.data();
-            const dLng = data.location.longitude;
-
-            if (dLng >= lng - radius && dLng <= lng + radius) {
-              const li = document.createElement("li");
-              li.textContent = data.title + " - " + data.content;
-              newsList.appendChild(li);
-            }
-          });
-
-          if (!newsList.children.length) {
-            newsList.innerHTML = "<li>No nearby news.</li>";
-          }
-        } catch (e) {
-          console.error(e);
-          alert("Error loading nearby news: " + e.message);
-        }
-      },
-      (err) => {
-        console.error(err);
-        alert("Location error: " + err.message);
+      if (!newsList.children.length) {
+        newsList.innerHTML = "<li>No nearby news.</li>";
       }
-    );
+    } catch (e) {
+      console.error(e);
+      alert("Error loading news: " + e.message);
+    }
   });
 });
