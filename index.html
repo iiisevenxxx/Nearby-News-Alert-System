@@ -18,33 +18,24 @@
       </header>
 
       <main class="app-main">
-        <!-- Auth Card -->
-        <section class="card auth-card">
+        <section class="panel">
           <h2>Account</h2>
-          <div class="field">
-            <label for="emailInput">Email</label>
-            <input
-              id="emailInput"
-              type="email"
-              placeholder="you@example.com"
-            />
-          </div>
-
-          <div class="field">
-            <label for="passwordInput">Password</label>
-            <input
-              id="passwordInput"
-              type="password"
-              placeholder="Min 6 characters"
-            />
-          </div>
+          <input
+            id="emailInput"
+            type="email"
+            placeholder="Email"
+          />
+          <input
+            id="passwordInput"
+            type="password"
+            placeholder="Password"
+          />
 
           <div class="btn-row">
-            <button id="signupBtn" class="secondary">Sign up</button>
-            <button id="loginBtn" class="primary">Login</button>
+            <button id="signupBtn">Sign up</button>
+            <button id="loginBtn">Login</button>
             <button
               id="logoutBtn"
-              class="secondary"
               style="display: none;"
             >
               Logout
@@ -52,63 +43,44 @@
           </div>
         </section>
 
-        <!-- Create News Card -->
-        <section class="card create-card">
+        <section class="panel">
           <h2>Create News</h2>
-
-          <div class="field">
-            <label for="titleInput">Title</label>
-            <input
-              id="titleInput"
-              type="text"
-              placeholder="Bridge collapsed near..."
-            />
-          </div>
-
-          <div class="field">
-            <label for="contentInput">Details</label>
-            <textarea
-              id="contentInput"
-              placeholder="Describe what happened..."
-              rows="3"
-            ></textarea>
-          </div>
-
-          <div class="field">
-            <label for="imageInput">Photo (optional)</label>
-            <input
-              id="imageInput"
-              type="file"
-              accept="image/*"
-            />
-          </div>
-
-          <button id="postBtn" class="primary full-width">
+          <input
+            id="titleInput"
+            type="text"
+            placeholder="Title"
+          />
+          <textarea
+            id="contentInput"
+            placeholder="Details"
+            rows="3"
+          ></textarea>
+          <input
+            id="imageInput"
+            type="file"
+            accept="image/*"
+          />
+          <button id="postBtn" class="full-width">
             Post with my location
           </button>
         </section>
 
-        <!-- Nearby News List -->
-        <section class="card list-card">
+        <section class="panel panel-wide">
           <div class="list-header">
             <h2>Nearby News</h2>
-            <button id="loadNearbyBtn" class="secondary small-btn">
+            <button id="loadNearbyBtn" class="small-btn">
               Load nearby news
             </button>
           </div>
-
-          <ul id="newsList">
-            <!-- JS will render items here -->
-          </ul>
+          <ul id="newsList"></ul>
         </section>
       </main>
 
       <footer class="app-footer">
-        <small>Built by isevenx • Nearby alerts powered by Firebase</small>
+        <small>Built by isevenx</small>
       </footer>
     </div>
 
-    <!-- Firebase SDKs -->
     <script
       src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"
       defer
@@ -122,7 +94,6 @@
       defer
     ></script>
 
-    <!-- Config + App -->
     <script src="./firebaseConfig.js" defer></script>
     <script src="./app.js" defer></script>
   </body>
