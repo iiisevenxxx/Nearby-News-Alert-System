@@ -13,9 +13,9 @@ body {
 }
 
 .app-container {
-  max-width: 800px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 12px;
+  padding: 16px;
 }
 
 .app-header {
@@ -46,7 +46,7 @@ body {
   color: #6b7280;
 }
 
-/* Panels (thoda less padding) */
+/* Panels */
 .panel {
   background: #020617;
   border-radius: 8px;
@@ -139,14 +139,27 @@ button.full-width {
   margin-top: 4px;
 }
 
-/* Responsive */
+/* Responsive desktop */
 @media (min-width: 768px) {
   .app-main {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.1fr 1.2fr;
     align-items: flex-start;
+    column-gap: 16px;
   }
 
   .panel-wide {
     grid-column: 1 / -1;
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  #newsList li {
+    font-size: 13px;
+  }
+
+  .panel h2 {
+    font-size: 15px;
   }
 }
