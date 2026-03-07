@@ -1,4 +1,4 @@
-// Nearby News & Alert System - Optimized app.js
+// Nearby News & Alert System - Optimized app.js with image compression
 
 document.addEventListener("DOMContentLoaded", () => {
   const $ = (id) => document.getElementById(id);
@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentUser = null;
   let db = null;
 
-  // Firebase init
+  // ---------- FIREBASE INIT ----------
   function initFirebase() {
     if (!window.firebase || !window.firebase.initializeApp) {
       if (userInfo) userInfo.textContent = "Firebase SDK not loaded.";
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!initFirebase()) return;
 
-  // Helpers
+  // ---------- HELPERS ----------
   function haversineDistance(lat1, lon1, lat2, lon2) {
     const toRad = (x) => (x * Math.PI) / 180;
     const R = 6371;
@@ -105,8 +105,79 @@ document.addEventListener("DOMContentLoaded", () => {
     alert(msg);
   }
 
-  // ImgBB
-  const IMGBB_API_KEY = "626612f93c87680ce07cd7ab1406725c"; // yahan tumhari key
+  // ---------- IMAGE COMPRESSION (~90KB) ----------
+  async function compressImageToTargetKB(file, targetKB = 90) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+
+          const maxDim = 1024;
+          let { width, height } = img;
+
+          if (width > height && width > maxDim) {
+            height = (height * maxDim) / width;
+            width = maxDim;
+          } else if (height > width && height > maxDim) {
+            width = (width * maxDim) / height;
+            height = maxDim;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+
+          let quality = 0.9;
+          const targetBytes = targetKB * 1024;
+
+          const step = () => {
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) {
+                  reject(new Error("Canvas toBlob failed"));
+                  return;
+                }
+                if (blob.size <= targetBytes || quality <= 0.3) {
+                  resolve(blob);
+                } else {
+                  quality -= 0.1;
+                  canvas.toBlob(
+                    (b2) => {
+                      if (!b2) {
+                        reject(new Error("Canvas toBlob failed (second)"));
+                        return;
+                      }
+                      if (b2.size <= targetBytes || quality <= 0.3) {
+                        resolve(b2);
+                      } else {
+                        step();
+                      }
+                    },
+                    "image/jpeg",
+                    quality
+                  );
+                }
+              },
+              "image/jpeg",
+              quality
+            );
+          };
+
+          step();
+        };
+        img.onerror = () => reject(new Error("Image load failed"));
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject(new Error("File read failed"));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ---------- IMGBB UPLOAD ----------
+  const IMGBB_API_KEY = "626612f93c87680ce07cd7ab1406725c";
 
   async function uploadToImgBB(file) {
     if (!file) return null;
@@ -114,8 +185,16 @@ document.addEventListener("DOMContentLoaded", () => {
       console.warn("ImgBB API key not set.");
       return null;
     }
+
+    const compressed = await compressImageToTargetKB(file, 90).catch((e) => {
+      console.warn("Compression failed, using original file:", e);
+      return null;
+    });
+    const uploadFile = compressed || file;
+
     const formData = new FormData();
-    formData.append("image", file);
+    formData.append("image", uploadFile);
+
     const url =
       "https://api.imgbb.com/1/upload?key=" +
       encodeURIComponent(IMGBB_API_KEY);
@@ -127,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
     throw new Error("ImgBB response invalid");
   }
 
-  // Auth
+  // ---------- AUTH ----------
   firebase.auth().onAuthStateChanged(setAuthUI);
 
   function handleSignup() {
@@ -172,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  // Create post
+  // ---------- CREATE POST ----------
   function handleCreatePost() {
     if (!currentUser) {
       showAlert("Please login first.");
@@ -224,7 +303,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  // Load nearby
+  // ---------- LOAD NEARBY ----------
   function renderPostItem(data, distanceText) {
     const li = document.createElement("li");
     const title = data.title || "No title";
@@ -288,7 +367,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  // Events
+  // ---------- EVENT BINDINGS ----------
   if (signupBtn) signupBtn.addEventListener("click", handleSignup);
   if (loginBtn) loginBtn.addEventListener("click", handleLogin);
   if (logoutBtn) logoutBtn.addEventListener("click", handleLogout);
