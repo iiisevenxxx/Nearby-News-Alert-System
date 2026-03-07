@@ -13,37 +13,26 @@
   <body>
     <div class="app-container">
       <header class="app-header">
-        <h1>Nearby News &amp; Alert System</h1>
-        <p id="userInfo">Not logged in.</p>
-      </header>
-
-      <main class="app-main">
-        <!-- Account controls (optional yahan bhi rakh sakte ho) -->
-        <section class="panel">
-          <h2>Account</h2>
-          <input
-            id="emailInput"
-            type="email"
-            placeholder="Email"
-          />
-          <input
-            id="passwordInput"
-            type="password"
-            placeholder="Password"
-          />
-
-          <div class="btn-row">
-            <button id="signupBtn">Sign up</button>
-            <button id="loginBtn">Login</button>
+        <div class="nav-bar">
+          <div class="nav-left">
+            <span class="logo-text">Nearby News &amp; Alert System</span>
+          </div>
+          <div class="nav-right">
+            <span id="userInfo" class="user-label">Not logged in.</span>
+            <button id="loginBtn" class="small-btn">Login</button>
+            <button id="signupBtn" class="small-btn">Sign up</button>
             <button
               id="logoutBtn"
+              class="small-btn"
               style="display: none;"
             >
               Logout
             </button>
           </div>
-        </section>
+        </div>
+      </header>
 
+      <main class="app-main">
         <!-- Create News -->
         <section class="panel app-section">
           <h2>Create News</h2>
