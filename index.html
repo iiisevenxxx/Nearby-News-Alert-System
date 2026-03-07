@@ -2,70 +2,128 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Nearby News & Alert System</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>Nearby News &amp; Alert System</title>
     <link rel="stylesheet" href="style.css" />
   </head>
+
   <body>
-    <div class="container">
-      <h1>Nearby News & Alert System</h1>
+    <div class="app-container">
+      <header class="app-header">
+        <h1>Nearby News &amp; Alert System</h1>
+        <p id="userInfo">Not logged in.</p>
+      </header>
 
-      <div class="card">
-        <h2>Login / Signup (Email)</h2>
-        <div class="field">
-          <label for="emailInput">Email</label>
-          <input id="emailInput" type="email" placeholder="you@example.com" />
-        </div>
-        <div class="field">
-          <label for="passwordInput">Password</label>
-          <input
-            id="passwordInput"
-            type="password"
-            placeholder="Min 6 characters"
-          />
-        </div>
-        <button id="signupBtn" class="secondary">Sign up</button>
-        <button id="loginBtn" class="primary">Login</button>
-        <button id="logoutBtn" class="secondary" style="display:none;">
-          Logout
-        </button>
-        <p id="userInfo"></p>
-      </div>
+      <main class="app-main">
+        <!-- Auth Card -->
+        <section class="card auth-card">
+          <h2>Account</h2>
+          <div class="field">
+            <label for="emailInput">Email</label>
+            <input
+              id="emailInput"
+              type="email"
+              placeholder="you@example.com"
+            />
+          </div>
 
-      <div class="card">
-        <h2>Create News</h2>
-        <div class="field">
-          <label for="titleInput">Title</label>
-          <input id="titleInput" placeholder="News title" />
-        </div>
-        <div class="field">
-          <label for="contentInput">Details</label>
-          <textarea id="contentInput" placeholder="Describe the news"></textarea>
-        </div>
-        <div class="field">
-          <label for="imageInput">Photo (optional)</label>
-          <input id="imageInput" type="file" accept="image/*" />
-        </div>
-        <button id="postBtn" class="primary">Post with my location</button>
-      </div>
+          <div class="field">
+            <label for="passwordInput">Password</label>
+            <input
+              id="passwordInput"
+              type="password"
+              placeholder="Min 6 characters"
+            />
+          </div>
 
-      <div class="card">
-        <h2>Nearby News</h2>
-        <button id="loadNearbyBtn" class="secondary">
-          Load nearby news
-        </button>
-        <ul id="newsList"></ul>
-      </div>
+          <div class="btn-row">
+            <button id="signupBtn" class="secondary">Sign up</button>
+            <button id="loginBtn" class="primary">Login</button>
+            <button
+              id="logoutBtn"
+              class="secondary"
+              style="display: none;"
+            >
+              Logout
+            </button>
+          </div>
+        </section>
+
+        <!-- Create News Card -->
+        <section class="card create-card">
+          <h2>Create News</h2>
+
+          <div class="field">
+            <label for="titleInput">Title</label>
+            <input
+              id="titleInput"
+              type="text"
+              placeholder="Bridge collapsed near..."
+            />
+          </div>
+
+          <div class="field">
+            <label for="contentInput">Details</label>
+            <textarea
+              id="contentInput"
+              placeholder="Describe what happened..."
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="field">
+            <label for="imageInput">Photo (optional)</label>
+            <input
+              id="imageInput"
+              type="file"
+              accept="image/*"
+            />
+          </div>
+
+          <button id="postBtn" class="primary full-width">
+            Post with my location
+          </button>
+        </section>
+
+        <!-- Nearby News List -->
+        <section class="card list-card">
+          <div class="list-header">
+            <h2>Nearby News</h2>
+            <button id="loadNearbyBtn" class="secondary small-btn">
+              Load nearby news
+            </button>
+          </div>
+
+          <ul id="newsList">
+            <!-- JS will render items here -->
+          </ul>
+        </section>
+      </main>
+
+      <footer class="app-footer">
+        <small>Built by isevenx • Nearby alerts powered by Firebase</small>
+      </footer>
     </div>
 
-    <!-- Firebase JS SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <!-- Firebase SDKs -->
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"
+      defer
+    ></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"
+      defer
+    ></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"
+      defer
+    ></script>
 
-    <!-- Config + app -->
-    <script src="firebaseConfig.js"></script>
-    <script src="app.js"></script>
+    <!-- Config + App -->
+    <script src="./firebaseConfig.js" defer></script>
+    <script src="./app.js" defer></script>
   </body>
 </html>
