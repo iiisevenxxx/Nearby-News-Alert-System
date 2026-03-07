@@ -107,6 +107,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ---------- IMAGE COMPRESSION (~90KB) ----------
   async function compressImageToTargetKB(file, targetKB = 90) {
+    const targetBytes = targetKB * 1024;
+
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -131,42 +133,43 @@ document.addEventListener("DOMContentLoaded", () => {
           ctx.drawImage(img, 0, 0, width, height);
 
           let quality = 0.9;
-          const targetBytes = targetKB * 1024;
 
-          const step = () => {
+          const tryCompress = () => {
             canvas.toBlob(
               (blob) => {
                 if (!blob) {
                   reject(new Error("Canvas toBlob failed"));
                   return;
                 }
+
                 if (blob.size <= targetBytes || quality <= 0.3) {
                   resolve(blob);
-                } else {
-                  quality -= 0.1;
-                  canvas.toBlob(
-                    (b2) => {
-                      if (!b2) {
-                        reject(new Error("Canvas toBlob failed (second)"));
-                        return;
-                      }
-                      if (b2.size <= targetBytes || quality <= 0.3) {
-                        resolve(b2);
-                      } else {
-                        step();
-                      }
-                    },
-                    "image/jpeg",
-                    quality
-                  );
+                  return;
                 }
+
+                quality -= 0.1;
+                canvas.toBlob(
+                  (b2) => {
+                    if (!b2) {
+                      reject(new Error("Canvas toBlob failed (second)"));
+                      return;
+                    }
+                    if (b2.size <= targetBytes || quality <= 0.3) {
+                      resolve(b2);
+                    } else {
+                      tryCompress();
+                    }
+                  },
+                  "image/jpeg",
+                  quality
+                );
               },
               "image/jpeg",
               quality
             );
           };
 
-          step();
+          tryCompress();
         };
         img.onerror = () => reject(new Error("Image load failed"));
         img.src = e.target.result;
@@ -190,7 +193,9 @@ document.addEventListener("DOMContentLoaded", () => {
       console.warn("Compression failed, using original file:", e);
       return null;
     });
+
     const uploadFile = compressed || file;
+    console.log("Upload size (bytes):", uploadFile.size);
 
     const formData = new FormData();
     formData.append("image", uploadFile);
