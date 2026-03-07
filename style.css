@@ -12,7 +12,6 @@ body {
   min-height: 100vh;
 }
 
-/* Layout */
 .app-container {
   max-width: 1100px;
   margin: 0 auto;
@@ -20,57 +19,24 @@ body {
 }
 
 .app-header {
+  text-align: center;
   margin-bottom: 10px;
 }
 
-/* Navbar */
-.nav-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #1f2937;
-  margin-bottom: 8px;
-}
-
-.logo-text {
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.user-label {
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-/* Old header text (for login page) */
 .app-header h1 {
   font-size: 20px;
   margin-bottom: 2px;
 }
 
-.intro {
-  font-size: 13px;
+#userInfo {
+  font-size: 12px;
   color: #9ca3af;
-  margin-top: 4px;
 }
 
 .app-main {
   display: grid;
   grid-template-columns: 1fr;
   gap: 10px;
-}
-
-.app-main.single-column {
-  max-width: 420px;
-  margin: 0 auto;
 }
 
 .app-footer {
@@ -138,18 +104,17 @@ button.full-width {
   gap: 6px;
 }
 
-/* Small buttons */
-.small-btn {
-  font-size: 12px;
-  padding-inline: 8px;
-}
-
 /* List */
 .list-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
+}
+
+.small-btn {
+  font-size: 12px;
+  padding-inline: 8px;
 }
 
 #newsList {
