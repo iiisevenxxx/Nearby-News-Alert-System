@@ -5,12 +5,95 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   background: #f4f4f7;
   color: #222;
 }
 
-/* PANELS / LAYOUT (old app.css style compatible) */
+/* TOP NAVBAR */
+
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1e293b;
+  color: #f9fafb;
+  padding: 8px 12px;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.menu-btn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.app-title {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+/* Side menu */
+
+.side-menu {
+  position: fixed;
+  left: -220px;
+  top: 0;
+  width: 200px;
+  height: 100%;
+  background: #0f172a;
+  padding: 60px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: left 0.2s ease-out;
+  z-index: 120;
+}
+
+.side-menu a {
+  color: #e5e7eb;
+  text-decoration: none;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.side-menu a:hover {
+  background: #1f2937;
+}
+
+.side-menu.open {
+  left: 0;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-out;
+  z-index: 110;
+}
+
+.backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* APP / PANELS */
+
 .app-container {
   max-width: 900px;
   margin: 0 auto 40px auto;
@@ -32,7 +115,7 @@ body {
   background: #fff;
   border-radius: 8px;
   padding: 12px 14px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   flex: 1 1 260px;
 }
 
@@ -41,231 +124,162 @@ body {
 }
 
 .app-footer {
-  text-align: center;
   margin-top: 16px;
-  font-size: 13px;
-  color: #777;
+  text-align: center;
+  color: #6b7280;
+  font-size: 12px;
 }
 
-/* Inputs & buttons */
+/* INPUTS / BUTTONS */
+
 input[type="text"],
 input[type="email"],
 input[type="password"],
+input[type="file"],
 textarea {
   width: 100%;
+  margin: 6px 0;
   padding: 8px;
-  margin-bottom: 8px;
   border-radius: 6px;
-  border: 1px solid #ccc;
+  border: 1px solid #d1d5db;
   font-size: 14px;
+}
+
+textarea {
+  resize: vertical;
 }
 
 button {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  background: #007bff;
-  color: #fff;
   cursor: pointer;
+  border-radius: 999px;
+  border: none;
+  padding: 8px 14px;
   font-size: 14px;
+  background: #2563eb;
+  color: #fff;
+}
+
+button:hover {
+  background: #1d4ed8;
 }
 
 button.small-btn {
-  padding: 6px 10px;
-  font-size: 13px;
+  padding: 4px 10px;
+  font-size: 12px;
 }
 
 button.full-width {
   width: 100%;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: default;
+  margin-top: 4px;
 }
 
 .btn-row {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-top: 8px;
 }
 
-/* Nearby list */
-#newsList {
-  list-style: none;
-  padding-left: 0;
-}
+/* AUTH PAGE */
 
-#newsList li {
-  margin-bottom: 8px;
-}
-
-.news-image {
-  max-width: 100%;
-  margin-top: 6px;
-  border-radius: 6px;
-}
-
-/* ==== NAVBAR ==== */
-.top-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  background: #1e1e2f;
-  color: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-.nav-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.menu-btn {
-  font-size: 22px;
-  background: transparent;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-}
-
-.app-title {
-  font-weight: 600;
-}
-
-/* Side menu */
-.side-menu {
-  position: fixed;
-  top: 0;
-  left: -240px;
-  width: 220px;
-  height: 100vh;
-  background: #252542;
-  display: flex;
-  flex-direction: column;
-  padding-top: 60px;
-  transition: left 0.3s ease;
-  z-index: 1100;
-}
-
-.side-menu a {
-  color: #fff;
-  padding: 12px 16px;
-  text-decoration: none;
-  font-size: 15px;
-}
-
-.side-menu a:hover {
-  background: rgba(255,255,255,0.1);
-}
-
-/* Backdrop */
-.backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: none;
-  z-index: 1050;
-}
-
-.side-menu.open {
-  left: 0;
-}
-
-.backdrop.show {
-  display: block;
-}
-
-/* ==== HOME (index.html) ==== */
-.home-container {
-  max-width: 700px;
-  margin: 20px auto;
-  padding: 0 16px 40px;
-}
-
-.news-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.news-card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 12px 14px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-  cursor: pointer;
-}
-
-.news-card h3 {
-  margin: 0 0 6px;
-  font-size: 16px;
-}
-
-.news-card p {
-  margin: 0 0 8px;
-  font-size: 14px;
-  color: #555;
-}
-
-.read-more {
-  font-size: 13px;
-  color: #007bff;
-}
-
-/* ==== DETAIL PAGE (news.html) ==== */
-.news-detail-container {
-  max-width: 700px;
-  margin: 20px auto;
-  padding: 0 16px 40px;
-}
-
-.back-btn {
-  margin-bottom: 12px;
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: none;
-  background: #eee;
-  cursor: pointer;
-}
-
-.news-meta {
-  font-size: 13px;
-  color: #777;
-  margin-bottom: 12px;
-}
-
-.news-body {
-  font-size: 15px;
-  line-height: 1.5;
-}
-
-/* ==== LOGIN PAGE (login.html) ==== */
 .auth-container {
-  max-width: 400px;
-  margin: 40px auto;
+  max-width: 420px;
+  margin: 24px auto;
   padding: 0 16px 40px;
 }
 
-.auth-panel input {
-  width: 100%;
-  margin-bottom: 10px;
+.auth-panel {
+  margin-top: 12px;
 }
 
 .auth-status {
   margin-top: 10px;
   font-size: 14px;
-  color: #555;
+  color: #4b5563;
 }
 
-.news-meta-small {
+/* HOME PAGE (index.html) */
+
+.home-container {
+  max-width: 900px;
+  margin: 0 auto 40px auto;
+  padding: 12px 16px 40px;
+}
+
+.news-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.news-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.news-card h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.news-card p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.news-card .news-meta-small {
   margin: 0 0 4px;
   font-size: 12px;
   color: #777;
 }
 
+.read-more {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #2563eb;
+}
+
+/* News image (list + app.js) */
+
+.news-image {
+  margin-top: 6px;
+  max-width: 100%;
+  border-radius: 6px;
+  display: block;
+}
+
+/* LIST HEADER */
+
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ACCOUNT PAGE SIMPLE LAYOUT (if needed) */
+
+.account-container {
+  max-width: 600px;
+  margin: 24px auto;
+  padding: 0 16px 40px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 600px) {
+  .app-main {
+    flex-direction: column;
+  }
+
+  .side-menu {
+    width: 180px;
+  }
+}
