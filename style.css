@@ -1,165 +1,163 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  background: #0f172a;
-  color: #e5e7eb;
-  min-height: 100vh;
-}
-
-.app-container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 16px;
-}
-
-.app-header {
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.app-header h1 {
-  font-size: 20px;
-  margin-bottom: 2px;
-}
-
-#userInfo {
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-.app-main {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-}
-
-.app-footer {
-  margin-top: 10px;
-  text-align: center;
-  font-size: 11px;
-  color: #6b7280;
-}
-
-/* Panels */
-.panel {
-  background: #020617;
-  border-radius: 8px;
-  padding: 10px;
-  border: 1px solid #1f2937;
-}
-
-.panel h2 {
-  font-size: 14px;
-  margin-bottom: 6px;
-}
-
-/* Inputs */
-input,
-textarea {
-  width: 100%;
-  padding: 6px 8px;
-  border-radius: 6px;
-  border: 1px solid #1f2937;
-  background: #020617;
-  color: #e5e7eb;
-  font-size: 13px;
-  margin-bottom: 6px;
-}
-
-textarea {
-  resize: vertical;
-  min-height: 60px;
-}
-
-/* Buttons */
-button {
-  border-radius: 999px;
-  border: none;
-  cursor: pointer;
-  font-size: 13px;
-  padding: 6px 12px;
-  margin-top: 4px;
-  background: #111827;
-  color: #e5e7eb;
-  border: 1px solid #1f2937;
-}
-
-button:hover {
-  background: #020617;
-}
-
-button.full-width {
-  width: 100%;
-}
-
-.btn-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-/* List */
-.list-header {
+/* ==== NAVBAR ==== */
+.top-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  padding: 10px 16px;
+  background: #1e1e2f;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
-.small-btn {
-  font-size: 12px;
-  padding-inline: 8px;
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-#newsList {
-  list-style: none;
-  margin-top: 6px;
+.menu-btn {
+  font-size: 22px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
 }
 
-#newsList li {
-  padding: 6px 8px;
+.app-title {
+  font-weight: 600;
+}
+
+/* Side menu */
+.side-menu {
+  position: fixed;
+  top: 0;
+  left: -240px;
+  width: 220px;
+  height: 100vh;
+  background: #252542;
+  display: flex;
+  flex-direction: column;
+  padding-top: 60px;
+  transition: left 0.3s ease;
+  z-index: 1100;
+}
+
+.side-menu a {
+  color: #fff;
+  padding: 12px 16px;
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.side-menu a:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* Backdrop */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: none;
+  z-index: 1050;
+}
+
+.side-menu.open {
+  left: 0;
+}
+
+.backdrop.show {
+  display: block;
+}
+
+/* ==== HOME (index.html) ==== */
+.home-container {
+  max-width: 700px;
+  margin: 20px auto;
+  padding: 0 16px 40px;
+}
+
+.news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.news-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+
+.news-card h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.news-card p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #555;
+}
+
+.read-more {
+  font-size: 13px;
+  color: #007bff;
+}
+
+/* ==== DETAIL PAGE (news.html) ==== */
+.news-detail-container {
+  max-width: 700px;
+  margin: 20px auto;
+  padding: 0 16px 40px;
+}
+
+.back-btn {
+  margin-bottom: 12px;
+  padding: 6px 10px;
   border-radius: 6px;
-  border: 1px solid #1f2937;
-  background: #020617;
-  font-size: 12px;
-  line-height: 1.3;
-  margin-bottom: 4px;
+  border: none;
+  background: #eee;
+  cursor: pointer;
 }
 
-/* Image */
+.news-meta {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 12px;
+}
+
+.news-body {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ==== LOGIN PAGE (login.html) ==== */
+.auth-container {
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 0 16px 40px;
+}
+
+.auth-panel input {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.auth-status {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #555;
+}
+
+/* Optional: images in nearby list */
 .news-image {
   max-width: 100%;
+  margin-top: 6px;
   border-radius: 6px;
-  margin-top: 4px;
-}
-
-/* Responsive desktop */
-@media (min-width: 768px) {
-  .app-main {
-    grid-template-columns: 1.1fr 1.2fr;
-    align-items: flex-start;
-    column-gap: 16px;
-  }
-
-  .panel-wide {
-    grid-column: 1 / -1;
-  }
-
-  body {
-    font-size: 14px;
-  }
-
-  #newsList li {
-    font-size: 13px;
-  }
-
-  .panel h2 {
-    font-size: 15px;
-  }
 }
