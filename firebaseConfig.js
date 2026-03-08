@@ -1,6 +1,7 @@
 // firebaseConfig.js
+// Using Firebase v8 global SDK (loaded via <script> tags in HTML)
 
-window.firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyAidKMs67_gh4xNLQXiNyDwE4AbhrbvZ7M",
   authDomain: "nearby-news-alert-system.firebaseapp.com",
   projectId: "nearby-news-alert-system",
@@ -10,7 +11,5 @@ window.firebaseConfig = {
   measurementId: "G-4C2GH1B406"
 };
 
-// v8 init
-if (!firebase.apps || !firebase.apps.length) {
-  firebase.initializeApp(window.firebaseConfig);
-}
+// Initialize Firebase (only once, shared by all pages)
+firebase.initializeApp(firebaseConfig);
