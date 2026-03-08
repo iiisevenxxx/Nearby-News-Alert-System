@@ -262,3 +262,10 @@ button:disabled {
   font-size: 14px;
   color: #555;
 }
+
+.news-meta-small {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: #777;
+}
+
