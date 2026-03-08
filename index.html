@@ -1,14 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="utf-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1"
     />
-    <title>Nearby News - Home</title>
+    <title>Nearby News - Login</title>
     <link rel="stylesheet" href="style.css" />
   </head>
+
   <body>
     <!-- Navbar -->
     <header class="top-nav">
@@ -25,140 +26,115 @@
       <div id="backdrop" class="backdrop"></div>
     </header>
 
-    <main class="home-container">
-      <h2>Latest Nearby News</h2>
-      <div id="newsList" class="news-list"></div>
+    <main class="auth-container">
+      <section class="panel auth-panel">
+        <h2>Login / Signup</h2>
+        <input
+          id="authEmail"
+          type="email"
+          placeholder="Email"
+        />
+        <input
+          id="authPassword"
+          type="password"
+          placeholder="Password"
+        />
+
+        <div class="btn-row">
+          <button id="authSignupBtn">Sign up</button>
+          <button id="authLoginBtn">Login</button>
+          <button
+            id="authLogoutBtn"
+            style="display: none;"
+          >
+            Logout
+          </button>
+        </div>
+
+        <p id="authStatus" class="auth-status">
+          Not logged in.
+        </p>
+      </section>
     </main>
 
-    <!-- Firebase v8 (same as app.html) -->
+    <!-- Firebase v8 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="firebaseConfig.js"></script>
-    <script src="nav.js"></script>
 
+    <!-- Simple auth logic only for this page -->
     <script>
-      const db = firebase.firestore();
+      document.addEventListener("DOMContentLoaded", () => {
+        const $ = (id) => document.getElementById(id);
 
-      // User location cache for distance
-      let userLocation = null;
+        const emailEl = $("authEmail");
+        const passEl = $("authPassword");
+        const signupBtn = $("authSignupBtn");
+        const loginBtn = $("authLoginBtn");
+        const logoutBtn = $("authLogoutBtn");
+        const statusEl = $("authStatus");
 
-      function haversineDistance(lat1, lon1, lat2, lon2) {
-        const toRad = (x) => (x * Math.PI) / 180;
-        const R = 6371; // km
-        const dLat = toRad(lat2 - lat1);
-        const dLon = toRad(lon2 - lon1);
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(toRad(lat1)) *
-            Math.cos(toRad(lat2)) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-      }
-
-      function formatDistance(data) {
-        if (
-          !userLocation ||
-          !data.location ||
-          typeof data.location.latitude !== "number" ||
-          typeof data.location.longitude !== "number"
-        ) {
-          return "";
-        }
-        const dKm = haversineDistance(
-          userLocation.lat,
-          userLocation.lng,
-          data.location.latitude,
-          data.location.longitude
-        );
-        const km = Math.round(dKm * 10) / 10;
-        const m = Math.round(dKm * 1000);
-        return ` • ${km} km (${m} m) away`;
-      }
-
-      function formatCreatedAt(data) {
-        if (!data.createdAt || !data.createdAt.toDate) return "";
-        const d = data.createdAt.toDate();
-        return d.toLocaleString();
-      }
-
-      function renderNewsCard(id, data) {
-        const card = document.createElement("div");
-        card.className = "news-card";
-        card.addEventListener("click", () => {
-          window.location.href = `news.html?id=${id}`;
-        });
-
-        const title = data.title || "Untitled News";
-        const body = (data.content || "").slice(0, 80) + "...";
-        const timeText = formatCreatedAt(data);
-        const distanceText = formatDistance(data);
-
-        card.innerHTML = `
-          <h3>${title}</h3>
-          <p>${body}</p>
-          <p class="news-meta-small">
-            ${timeText}${distanceText}
-          </p>
-          ${
-            data.imageUrl
-              ? `<img src="${data.imageUrl}" alt="${title}" class="news-image" />`
-              : ""
+        function setUI(user) {
+          if (!statusEl || !signupBtn || !loginBtn || !logoutBtn) return;
+          if (user) {
+            statusEl.textContent =
+              "Logged in as " + (user.email || "unknown");
+            signupBtn.style.display = "none";
+            loginBtn.style.display = "none";
+            logoutBtn.style.display = "inline-block";
+          } else {
+            statusEl.textContent = "Not logged in.";
+            signupBtn.style.display = "inline-block";
+            loginBtn.style.display = "inline-block";
+            logoutBtn.style.display = "none";
           }
-          <span class="read-more">Read more</span>
-        `;
-        return card;
-      }
+        }
 
-      async function loadNews() {
-        const listEl = document.getElementById("newsList");
-        listEl.textContent = "Loading...";
-        try {
-          const snap = await db
-            .collection("posts")
-            .orderBy("createdAt", "desc")
-            .limit(20)
-            .get();
+        firebase.auth().onAuthStateChanged(setUI);
 
-          listEl.textContent = "";
+        function getVal(el) {
+          return el ? el.value.trim() : "";
+        }
 
-          if (snap.empty) {
-            listEl.textContent = "No news found.";
+        function doSignup() {
+          const email = getVal(emailEl);
+          const pass = getVal(passEl);
+          if (!email || !pass) {
+            alert("Please fill email & password.");
             return;
           }
+          firebase
+            .auth()
+            .createUserWithEmailAndPassword(email, pass)
+            .catch((e) => alert("Signup error: " + e.message));
+        }
 
-          snap.forEach((doc) => {
-            listEl.appendChild(renderNewsCard(doc.id, doc.data()));
+        function doLogin() {
+          const email = getVal(emailEl);
+          const pass = getVal(passEl);
+          if (!email || !pass) {
+            alert("Please fill email & password.");
+            return;
+          }
+          firebase
+            .auth()
+            .signInWithEmailAndPassword(email, pass)
+            .catch((e) => alert("Login error: " + e.message));
+        }
+
+        function doLogout() {
+          firebase.auth().signOut().catch((e) => {
+            alert("Logout error: " + e.message);
           });
-        } catch (e) {
-          console.error("Home load error:", e);
-          listEl.textContent = "Error loading news.";
         }
-      }
 
-      // First try to get user location (for distance), then load news
-      function initHome() {
-        if (!navigator.geolocation) {
-          loadNews();
-          return;
-        }
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            userLocation = {
-              lat: pos.coords.latitude,
-              lng: pos.coords.longitude
-            };
-            loadNews();
-          },
-          () => {
-            loadNews();
-          },
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-      }
-
-      document.addEventListener("DOMContentLoaded", initHome);
+        if (signupBtn) signupBtn.addEventListener("click", doSignup);
+        if (loginBtn) loginBtn.addEventListener("click", doLogin);
+        if (logoutBtn) logoutBtn.addEventListener("click", doLogout);
+      });
     </script>
+
+    <!-- Navbar JS -->
+    <script src="nav.js"></script>
   </body>
 </html>
