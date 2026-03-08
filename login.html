@@ -11,6 +11,7 @@
   </head>
 
   <body>
+    <!-- Navbar -->
     <header class="top-nav">
       <div class="nav-left">
         <button id="menuToggle" class="menu-btn">&#9776;</button>
@@ -28,7 +29,6 @@
     <main class="auth-container">
       <section class="panel auth-panel">
         <h2>Login / Signup</h2>
-
         <input
           id="authEmail"
           type="email"
@@ -43,15 +43,13 @@
         <div class="btn-row">
           <button id="authSignupBtn">Sign up</button>
           <button id="authLoginBtn">Login</button>
+          <button
+            id="authLogoutBtn"
+            style="display: none;"
+          >
+            Logout
+          </button>
         </div>
-
-        <button
-          id="authLogoutBtn"
-          class="full-width"
-          style="display: none;"
-        >
-          Logout
-        </button>
 
         <p id="authStatus" class="auth-status">
           Not logged in.
@@ -59,79 +57,84 @@
       </section>
     </main>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" defer></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" defer></script>
-    <script src="firebaseConfig.js" defer></script>
-    <script src="nav.js"></script>
+    <!-- Firebase v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="firebaseConfig.js"></script>
 
+    <!-- Simple auth logic only for this page -->
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const auth = firebase.auth();
+      document.addEventListener("DOMContentLoaded", () => {
+        const $ = (id) => document.getElementById(id);
 
-        const emailInput = document.getElementById("authEmail");
-        const passwordInput = document.getElementById("authPassword");
-        const signupBtn = document.getElementById("authSignupBtn");
-        const loginBtn = document.getElementById("authLoginBtn");
-        const logoutBtn = document.getElementById("authLogoutBtn");
-        const statusP = document.getElementById("authStatus");
+        const emailEl = $("authEmail");
+        const passEl = $("authPassword");
+        const signupBtn = $("authSignupBtn");
+        const loginBtn = $("authLoginBtn");
+        const logoutBtn = $("authLogoutBtn");
+        const statusEl = $("authStatus");
 
-        function setStatus(text) {
-          statusP.textContent = text;
-        }
-
-        signupBtn.addEventListener("click", function () {
-          const email = emailInput.value.trim();
-          const password = passwordInput.value.trim();
-          if (!email || !password) {
-            setStatus("Please enter email and password.");
-            return;
-          }
-          auth
-            .createUserWithEmailAndPassword(email, password)
-            .then((cred) => {
-              setStatus("Account created & logged in as " + cred.user.email);
-            })
-            .catch((err) => {
-              console.error(err);
-              setStatus(err.message);
-            });
-        });
-
-        loginBtn.addEventListener("click", function () {
-          const email = emailInput.value.trim();
-          const password = passwordInput.value.trim();
-          if (!email || !password) {
-            setStatus("Please enter email and password.");
-            return;
-          }
-          auth
-            .signInWithEmailAndPassword(email, password)
-            .then((cred) => {
-              setStatus("Logged in as " + cred.user.email);
-            })
-            .catch((err) => {
-              console.error(err);
-              setStatus(err.message);
-            });
-        });
-
-        logoutBtn.addEventListener("click", function () {
-          auth.signOut().catch((err) => {
-            console.error(err);
-            setStatus(err.message);
-          });
-        });
-
-        auth.onAuthStateChanged((user) => {
+        function setUI(user) {
+          if (!statusEl || !signupBtn || !loginBtn || !logoutBtn) return;
           if (user) {
-            setStatus("Logged in as " + user.email);
-            logoutBtn.style.display = "block";
+            statusEl.textContent =
+              "Logged in as " + (user.email || "unknown");
+            signupBtn.style.display = "none";
+            loginBtn.style.display = "none";
+            logoutBtn.style.display = "inline-block";
           } else {
-            setStatus("Not logged in.");
+            statusEl.textContent = "Not logged in.";
+            signupBtn.style.display = "inline-block";
+            loginBtn.style.display = "inline-block";
             logoutBtn.style.display = "none";
           }
-        });
+        }
+
+        firebase.auth().onAuthStateChanged(setUI);
+
+        function getVal(el) {
+          return el ? el.value.trim() : "";
+        }
+
+        function doSignup() {
+          const email = getVal(emailEl);
+          const pass = getVal(passEl);
+          if (!email || !pass) {
+            alert("Please fill email & password.");
+            return;
+          }
+          firebase
+            .auth()
+            .createUserWithEmailAndPassword(email, pass)
+            .catch((e) => alert("Signup error: " + e.message));
+        }
+
+        function doLogin() {
+          const email = getVal(emailEl);
+          const pass = getVal(passEl);
+          if (!email || !pass) {
+            alert("Please fill email & password.");
+            return;
+          }
+          firebase
+            .auth()
+            .signInWithEmailAndPassword(email, pass)
+            .catch((e) => alert("Login error: " + e.message));
+        }
+
+        function doLogout() {
+          firebase.auth().signOut().catch((e) => {
+            alert("Logout error: " + e.message);
+          });
+        }
+
+        if (signupBtn) signupBtn.addEventListener("click", doSignup);
+        if (loginBtn) loginBtn.addEventListener("click", doLogin);
+        if (logoutBtn) logoutBtn.addEventListener("click", doLogout);
       });
     </script>
+
+    <!-- Navbar JS -->
+    <script src="nav.js"></script>
   </body>
 </html>
