@@ -33,6 +33,7 @@
       </header>
 
       <main class="app-main">
+        <!-- Account -->
         <section class="panel">
           <h2>Account</h2>
           <input
@@ -58,6 +59,7 @@
           </div>
         </section>
 
+        <!-- Create News -->
         <section class="panel app-section">
           <h2>Create News</h2>
           <input
@@ -80,6 +82,7 @@
           </button>
         </section>
 
+        <!-- Nearby News list (distance + image already app.js me handle hota hai) -->
         <section class="panel panel-wide app-section">
           <div class="list-header">
             <h2>Nearby News</h2>
@@ -96,7 +99,7 @@
       </footer>
     </div>
 
-    <!-- Firebase v8 -->
+    <!-- Firebase v8 (same project as index.html) -->
     <script
       src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"
       defer
@@ -110,8 +113,11 @@
       defer
     ></script>
 
+    <!-- Config + app logic -->
     <script src="firebaseConfig.js" defer></script>
     <script src="app.js" defer></script>
+
+    <!-- Navbar JS (without defer, taaki DOM ready pe listener lage) -->
     <script src="nav.js"></script>
   </body>
 </html>
