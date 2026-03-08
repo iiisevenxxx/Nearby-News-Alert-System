@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return false;
     }
     try {
-      firebase.initializeApp(window.firebaseConfig);
+      // firebaseConfig.js already calls firebase.initializeApp(...)
       db = firebase.firestore();
       return true;
     } catch (e) {
