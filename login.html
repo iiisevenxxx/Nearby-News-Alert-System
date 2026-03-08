@@ -11,7 +11,6 @@
   </head>
 
   <body>
-    <!-- Navbar -->
     <header class="top-nav">
       <div class="nav-left">
         <button id="menuToggle" class="menu-btn">&#9776;</button>
@@ -60,49 +59,37 @@
       </section>
     </main>
 
-    <!-- Firebase SDKs (same version as app.html) -->
-    <script
-      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"
-      defer
-    ></script>
-    <script
-      src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"
-      defer
-    ></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" defer></script>
     <script src="firebaseConfig.js" defer></script>
     <script src="nav.js"></script>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        if (!firebase.apps.length) {
-          // firebaseConfig.js already initializes; just in case
-          // firebase.initializeApp(firebaseConfig);
-        }
-
+      document.addEventListener("DOMContentLoaded", function () {
         const auth = firebase.auth();
 
-        const emailInput = document.getElementById('authEmail');
-        const passwordInput = document.getElementById('authPassword');
-        const signupBtn = document.getElementById('authSignupBtn');
-        const loginBtn = document.getElementById('authLoginBtn');
-        const logoutBtn = document.getElementById('authLogoutBtn');
-        const statusP = document.getElementById('authStatus');
+        const emailInput = document.getElementById("authEmail");
+        const passwordInput = document.getElementById("authPassword");
+        const signupBtn = document.getElementById("authSignupBtn");
+        const loginBtn = document.getElementById("authLoginBtn");
+        const logoutBtn = document.getElementById("authLogoutBtn");
+        const statusP = document.getElementById("authStatus");
 
         function setStatus(text) {
           statusP.textContent = text;
         }
 
-        signupBtn.addEventListener('click', function () {
+        signupBtn.addEventListener("click", function () {
           const email = emailInput.value.trim();
           const password = passwordInput.value.trim();
           if (!email || !password) {
-            setStatus('Please enter email and password.');
+            setStatus("Please enter email and password.");
             return;
           }
           auth
             .createUserWithEmailAndPassword(email, password)
             .then((cred) => {
-              setStatus('Account created & logged in as ' + cred.user.email);
+              setStatus("Account created & logged in as " + cred.user.email);
             })
             .catch((err) => {
               console.error(err);
@@ -110,17 +97,17 @@
             });
         });
 
-        loginBtn.addEventListener('click', function () {
+        loginBtn.addEventListener("click", function () {
           const email = emailInput.value.trim();
           const password = passwordInput.value.trim();
           if (!email || !password) {
-            setStatus('Please enter email and password.');
+            setStatus("Please enter email and password.");
             return;
           }
           auth
             .signInWithEmailAndPassword(email, password)
             .then((cred) => {
-              setStatus('Logged in as ' + cred.user.email);
+              setStatus("Logged in as " + cred.user.email);
             })
             .catch((err) => {
               console.error(err);
@@ -128,7 +115,7 @@
             });
         });
 
-        logoutBtn.addEventListener('click', function () {
+        logoutBtn.addEventListener("click", function () {
           auth.signOut().catch((err) => {
             console.error(err);
             setStatus(err.message);
@@ -137,11 +124,11 @@
 
         auth.onAuthStateChanged((user) => {
           if (user) {
-            setStatus('Logged in as ' + user.email);
-            logoutBtn.style.display = 'block';
+            setStatus("Logged in as " + user.email);
+            logoutBtn.style.display = "block";
           } else {
-            setStatus('Not logged in.');
-            logoutBtn.style.display = 'none';
+            setStatus("Not logged in.");
+            logoutBtn.style.display = "none";
           }
         });
       });
