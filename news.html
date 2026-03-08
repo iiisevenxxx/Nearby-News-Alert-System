@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>News Detail</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="top-nav">
+      <div class="nav-left">
+        <button id="menuToggle" class="menu-btn">&#9776;</button>
+        <span class="app-title">Nearby News</span>
+      </div>
+      <nav id="sideMenu" class="side-menu">
+        <a href="index.html">Home</a>
+        <a href="login.html">Login / Signup</a>
+        <a href="account.html">Account</a>
+        <a href="app.html">Create / Nearby News</a>
+      </nav>
+      <div id="backdrop" class="backdrop"></div>
+    </header>
+
+    <main class="news-detail-container">
+      <button id="backBtn" class="back-btn">← Back</button>
+      <h2 id="newsTitle">Loading...</h2>
+      <p id="newsMeta" class="news-meta"></p>
+      <p id="newsBody" class="news-body"></p>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="firebaseConfig.js"></script>
+    <script src="nav.js"></script>
+
+    <script>
+      const db = firebase.firestore();
+
+      function getQueryParam(name) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(name);
+      }
+
+      async function loadNewsDetail() {
+        const id = getQueryParam("id");
+        const titleEl = document.getElementById("newsTitle");
+        const metaEl = document.getElementById("newsMeta");
+        const bodyEl = document.getElementById("newsBody");
+
+        if (!id) {
+          titleEl.textContent = "Invalid news link";
+          return;
+        }
+
+        try {
+          const doc = await db.collection("posts").doc(id).get();
+          if (!doc.exists) {
+            titleEl.textContent = "News not found";
+            return;
+          }
+
+          const data = doc.data();
+          titleEl.textContent = data.title || "Untitled News";
+          bodyEl.textContent = data.content || "No details available.";
+
+          if (data.createdAt && data.createdAt.toDate) {
+            const d = data.createdAt.toDate();
+            metaEl.textContent = `Posted on ${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
+          }
+        } catch (e) {
+          console.error(e);
+          titleEl.textContent = "Error loading news";
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        document
+          .getElementById("backBtn")
+          .addEventListener("click", () => window.history.back());
+        loadNewsDetail();
+      });
+    </script>
+  </body>
+</html>
