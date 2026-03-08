@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- Navbar -->
     <header class="top-nav">
       <div class="nav-left">
         <button id="menuToggle" class="menu-btn">&#9776;</button>
@@ -29,12 +30,14 @@
       <div id="newsList" class="news-list"></div>
     </main>
 
+    <!-- Firebase v8 (same as app.html) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="firebaseConfig.js"></script>
     <script src="nav.js"></script>
 
     <script>
+      // firebaseConfig.js me firebase.initializeApp(...) already call ho raha hai
       const db = firebase.firestore();
 
       function renderNewsCard(id, data) {
@@ -56,7 +59,7 @@
         listEl.textContent = "Loading...";
         try {
           const snap = await db
-            .collection("posts")
+            .collection("posts")          // same collection as app.js
             .orderBy("createdAt", "desc")
             .limit(20)
             .get();
@@ -72,7 +75,7 @@
             listEl.appendChild(renderNewsCard(doc.id, doc.data()));
           });
         } catch (e) {
-          console.error(e);
+          console.error("Home load error:", e);
           listEl.textContent = "Error loading news.";
         }
       }
