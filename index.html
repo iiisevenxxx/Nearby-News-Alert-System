@@ -1,81 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Nearby News - Home</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <!-- Navbar -->
-  <header class="top-nav">
-    <div class="nav-left">
-      <button id="menuToggle" class="menu-btn">&#9776;</button>
-      <span class="app-title">Nearby News</span>
-    </div>
-    <nav id="sideMenu" class="side-menu">
-      <a href="index.html">Home</a>
-      <a href="login.html">Login / Signup</a>
-      <a href="account.html">Account</a>
-      <a href="app.html">Create / Nearby News</a>
-    </nav>
-    <div id="backdrop" class="backdrop"></div>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>Nearby News - Home</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="top-nav">
+      <div class="nav-left">
+        <button id="menuToggle" class="menu-btn">&#9776;</button>
+        <span class="app-title">Nearby News</span>
+      </div>
+      <nav id="sideMenu" class="side-menu">
+        <a href="index.html">Home</a>
+        <a href="login.html">Login / Signup</a>
+        <a href="account.html">Account</a>
+        <a href="app.html">Create / Nearby News</a>
+      </nav>
+      <div id="backdrop" class="backdrop"></div>
+    </header>
 
-  <main class="home-container">
-    <h2>Latest Nearby News</h2>
-    <div id="newsList" class="news-list"></div>
-  </main>
+    <main class="home-container">
+      <h2>Latest Nearby News</h2>
+      <div id="newsList" class="news-list"></div>
+    </main>
 
-  <!-- Firebase (version apne project ke hisaab se same rakho) -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
-  <script src="firebaseConfig.js"></script>
-  <script src="nav.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="firebaseConfig.js"></script>
+    <script src="nav.js"></script>
 
-  <script>
-    const db = firebase.firestore();
+    <script>
+      const db = firebase.firestore();
 
-    function renderNewsCard(id, data) {
-      const card = document.createElement('div');
-      card.className = 'news-card';
-      card.addEventListener('click', () => {
-        window.location.href = `news.html?id=${id}`;
-      });
-      card.innerHTML = `
-        <h3>${data.title || 'Untitled News'}</h3>
-        <p>${(data.description || '').slice(0, 80)}...</p>
-        <span class="read-more">Read more</span>
-      `;
-      return card;
-    }
-
-    async function loadNews() {
-      const listEl = document.getElementById('newsList');
-      listEl.textContent = 'Loading...';
-      try {
-        const snap = await db
-          .collection('news')      // yaha collection ka naam same rakho jo app.html me use kiya hai
-          .orderBy('createdAt', 'desc')
-          .limit(20)
-          .get();
-
-        listEl.textContent = '';
-
-        if (snap.empty) {
-          listEl.textContent = 'No news found.';
-          return;
-        }
-
-        snap.forEach(doc => {
-          listEl.appendChild(renderNewsCard(doc.id, doc.data()));
+      function renderNewsCard(id, data) {
+        const card = document.createElement("div");
+        card.className = "news-card";
+        card.addEventListener("click", () => {
+          window.location.href = `news.html?id=${id}`;
         });
-      } catch (e) {
-        console.error(e);
-        listEl.textContent = 'Error loading news.';
+        card.innerHTML = `
+          <h3>${data.title || "Untitled News"}</h3>
+          <p>${(data.content || "").slice(0, 80)}...</p>
+          <span class="read-more">Read more</span>
+        `;
+        return card;
       }
-    }
 
-    document.addEventListener('DOMContentLoaded', loadNews);
-  </script>
-</body>
+      async function loadNews() {
+        const listEl = document.getElementById("newsList");
+        listEl.textContent = "Loading...";
+        try {
+          const snap = await db
+            .collection("posts")
+            .orderBy("createdAt", "desc")
+            .limit(20)
+            .get();
+
+          listEl.textContent = "";
+
+          if (snap.empty) {
+            listEl.textContent = "No news found.";
+            return;
+          }
+
+          snap.forEach((doc) => {
+            listEl.appendChild(renderNewsCard(doc.id, doc.data()));
+          });
+        } catch (e) {
+          console.error(e);
+          listEl.textContent = "Error loading news.";
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", loadNews);
+    </script>
+  </body>
 </html>
