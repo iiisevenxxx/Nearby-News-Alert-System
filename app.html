@@ -11,6 +11,21 @@
   </head>
 
   <body>
+    <!-- Navbar -->
+    <header class="top-nav">
+      <div class="nav-left">
+        <button id="menuToggle" class="menu-btn">&#9776;</button>
+        <span class="app-title">Nearby News</span>
+      </div>
+      <nav id="sideMenu" class="side-menu">
+        <a href="index.html">Home</a>
+        <a href="login.html">Login / Signup</a>
+        <a href="account.html">Account</a>
+        <a href="app.html">Create / Nearby News</a>
+      </nav>
+      <div id="backdrop" class="backdrop"></div>
+    </header>
+
     <div class="app-container">
       <header class="app-header">
         <h1>Nearby News &amp; Alert System</h1>
@@ -101,5 +116,8 @@
     <!-- Config + App logic -->
     <script src="./firebaseConfig.js" defer></script>
     <script src="./app.js" defer></script>
+
+    <!-- Navbar JS -->
+    <script src="nav.js"></script>
   </body>
 </html>
