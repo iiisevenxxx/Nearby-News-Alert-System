@@ -1,15 +1,16 @@
 // firebaseConfig.js
+
 window.firebaseConfig = {
-  apiKey: "AIzaSyD_YDGU9IWHDpxFl4S4U_IkEQ-5TrPjB_U",
-  authDomain: "isevenx-nearby-news.firebaseapp.com",
-  projectId: "isevenx-nearby-news",
-  storageBucket: "isevenx-nearby-news.appspot.com",
-  messagingSenderId: "1046821424203",
-  appId: "1:1046821424203:web:823a6210f19d5102c40e7b",
-  measurementId: "G-X8DY61GYWD"
+  apiKey: "AIzaSyAidKMs67_gh4xNLQXiNyDwE4AbhrbvZ7M",
+  authDomain: "nearby-news-alert-system.firebaseapp.com",
+  projectId: "nearby-news-alert-system",
+  storageBucket: "nearby-news-alert-system.firebasestorage.app",
+  messagingSenderId: "505694440391",
+  appId: "1:505694440391:web:89f49491abbf45197fa7e2",
+  measurementId: "G-4C2GH1B406"
 };
 
-// yaha initialize karo (v8 style)
+// v8 init
 if (!firebase.apps || !firebase.apps.length) {
   firebase.initializeApp(window.firebaseConfig);
 }
