@@ -55,26 +55,29 @@ document.addEventListener("DOMContentLoaded", () => {
     return R * c;
   }
 
-  // Always show km + meters (like index.html)
-  function formatDistance(userLat, userLng, loc) {
-    if (
-      !loc ||
-      typeof loc.latitude !== "number" ||
-      typeof loc.longitude !== "number"
-    ) {
-      return "";
-    }
-    const distKm = haversineDistance(
-      userLat,
-      userLng,
-      loc.latitude,
-      loc.longitude
-    );
-    const roundedKm = Math.round(distKm * 10) / 10;
-    const distM = Math.round(distKm * 1000);
 
-    return `${roundedKm} km (${distM} m) away`;
+function formatDistance(userLat, userLng, loc) {
+  if (
+    !loc ||
+    typeof loc.latitude !== "number" ||
+    typeof loc.longitude !== "number"
+  ) {
+    return "";
   }
+  const distKm = haversineDistance(
+    userLat,
+    userLng,
+    loc.latitude,
+    loc.longitude
+  );
+  const roundedKm = Math.round(distKm * 10) / 10;
+  const distM = Math.round(distKm * 1000);
+
+  // Hamesha km + meters
+  return `${roundedKm} km (${distM} m) away`;
+}
+
+
 
   function setAuthUI(user) {
     currentUser = user;
