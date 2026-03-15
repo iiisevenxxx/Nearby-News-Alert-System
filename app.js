@@ -1,4 +1,4 @@
-// Nearby News & Alert System - Optimized app.js with image compression
+// Nearby News & Alert System - Optimized app.js with image compression + reverse geocoding
 
 document.addEventListener("DOMContentLoaded", () => {
   const $ = (id) => document.getElementById(id);
@@ -71,7 +71,11 @@ document.addEventListener("DOMContentLoaded", () => {
     );
     const roundedKm = Math.round(distKm * 10) / 10;
     const distM = Math.round(distKm * 1000);
-    return ` (${roundedKm} km, ${distM} m away)`;
+
+    if (distKm < 1) {
+      return `${distM} m away`;
+    }
+    return `${roundedKm} km (${distM} m) away`;
   }
 
   function setAuthUI(user) {
@@ -211,6 +215,39 @@ document.addEventListener("DOMContentLoaded", () => {
     throw new Error("ImgBB response invalid");
   }
 
+  // ---------- REVERSE GEOCODING (ADDRESS) ----------
+  async function fetchAddressFromLatLng(lat, lng) {
+    try {
+      const url =
+        "https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=" +
+        encodeURIComponent(lat) +
+        "&longitude=" +
+        encodeURIComponent(lng) +
+        "&localityLanguage=en";
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Reverse geocode failed: " + res.status);
+      const data = await res.json();
+
+      const locality = data.locality || data.city || "";
+      const principalSubdivision = data.principalSubdivision || "";
+      const postcode = data.postcode || "";
+      const country = data.countryName || "";
+
+      const parts = [];
+      if (locality) parts.push(locality);
+      if (principalSubdivision) parts.push(principalSubdivision);
+      if (postcode) parts.push(postcode);
+      if (country) parts.push(country);
+
+      if (parts.length === 0) return null;
+      return parts.join(", ");
+    } catch (e) {
+      console.warn("Reverse geocode error:", e);
+      return null;
+    }
+  }
+
   // ---------- AUTH ----------
   firebase.auth().onAuthStateChanged(setAuthUI);
 
@@ -280,9 +317,12 @@ document.addEventListener("DOMContentLoaded", () => {
       async (pos) => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
+
         try {
           let imageUrl = null;
           if (file) imageUrl = await uploadToImgBB(file);
+
+          const address = await fetchAddressFromLatLng(lat, lng);
 
           await db.collection("posts").add({
             title,
@@ -290,7 +330,8 @@ document.addEventListener("DOMContentLoaded", () => {
             userId: currentUser.uid,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             location: new firebase.firestore.GeoPoint(lat, lng),
-            imageUrl: imageUrl || null
+            imageUrl: imageUrl || null,
+            address: address || null
           });
 
           showAlert("Post created.");
@@ -313,7 +354,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const li = document.createElement("li");
     const title = data.title || "No title";
     const content = data.content || "";
-    li.textContent = `${title} - ${content}${distanceText}`;
+    const address = data.address || "";
+
+    let line = `${title} - ${content}`;
+    if (distanceText) line += ` (${distanceText})`;
+    if (address) line += ` • ${address}`;
+
+    li.textContent = line;
+
     if (data.imageUrl) {
       const img = document.createElement("img");
       img.src = data.imageUrl;
