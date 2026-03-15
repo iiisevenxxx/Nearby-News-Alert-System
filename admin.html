@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+    />
+    <title>Nearby News - Admin Panel</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .admin-container {
+        max-width: 1000px;
+        margin: 16px auto 40px;
+        padding: 0 16px 40px;
+      }
+
+      .admin-header {
+        margin-bottom: 16px;
+      }
+
+      .admin-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        font-size: 11px;
+        border-radius: 999px;
+        background: #dcfce7;
+        color: #166534;
+        margin-left: 6px;
+      }
+
+      .admin-warning {
+        font-size: 13px;
+        color: #b91c1c;
+        margin-top: 4px;
+      }
+
+      .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        margin-top: 10px;
+      }
+
+      .admin-table th,
+      .admin-table td {
+        border: 1px solid #e5e7eb;
+        padding: 6px 8px;
+        vertical-align: top;
+      }
+
+      .admin-table th {
+        background: #f3f4f6;
+        text-align: left;
+      }
+
+      .tag-pill {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 999px;
+        font-size: 11px;
+        background: #e5e7eb;
+        color: #374151;
+      }
+
+      .danger-btn {
+        background: #dc2626;
+      }
+
+      .danger-btn:hover {
+        background: #b91c1c;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <header class="top-nav">
+      <div class="nav-left">
+        <button id="menuToggle" class="menu-btn">&#9776;</button>
+        <span class="app-title">Nearby News</span>
+      </div>
+      <nav id="sideMenu" class="side-menu">
+        <a href="index.html">Home</a>
+        <a href="login.html">Login / Signup</a>
+        <a href="account.html">Account</a>
+        <a href="app.html">Create / Nearby News</a>
+        <a href="map.html">Live Map</a>
+        <a href="admin.html">Admin</a>
+      </nav>
+      <div id="backdrop" class="backdrop"></div>
+    </header>
+
+    <main class="admin-container">
+      <div class="admin-header">
+        <h2>
+          Admin Panel
+          <span class="admin-badge">Restricted</span>
+        </h2>
+        <p class="admin-warning">
+          Only admin users should access this page. Actions here are permanent (post delete).
+        </p>
+        <p id="adminStatus" class="auth-status">Checking admin access...</p>
+      </div>
+
+      <section id="postsSection" style="display: none;">
+        <h3>All Posts</h3>
+        <p style="font-size: 13px; color: #4b5563;">
+          Latest 50 posts. You can delete any post or open it.
+        </p>
+        <div id="postsTableWrapper"></div>
+      </section>
+    </main>
+
+    <!-- Firebase v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="firebaseConfig.js"></script>
+
+    <!-- Navbar JS -->
+    <script src="nav.js"></script>
+
+    <script>
+      const db = firebase.firestore();
+
+      const adminStatusEl = document.getElementById("adminStatus");
+      const postsSection = document.getElementById("postsSection");
+      const postsTableWrapper = document.getElementById("postsTableWrapper");
+
+      let currentUser = null;
+      let isAdmin = false;
+
+      function renderPostsTable(docs) {
+        if (!docs.length) {
+          postsTableWrapper.innerHTML = "<p>No posts found.</p>";
+          return;
+        }
+
+        let html = `
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Content</th>
+                <th>User ID</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        docs.forEach((doc) => {
+          const data = doc.data();
+          const title = (data.title || "Untitled").substring(0, 60);
+          const content = (data.content || "").substring(0, 80);
+          const userId = data.userId || "unknown";
+          const created =
+            data.createdAt && data.createdAt.toDate
+              ? data.createdAt.toDate().toLocaleString()
+              : "N/A";
+
+          html += `
+            <tr data-id="${doc.id}">
+              <td>${title}</td>
+              <td>${content}</td>
+              <td><span class="tag-pill">${userId}</span></td>
+              <td>${created}</td>
+              <td>
+                <button class="small-btn" data-open="${doc.id}">Open</button>
+                <button class="small-btn danger-btn" data-delete="${doc.id}">Delete</button>
+              </td>
+            </tr>
+          `;
+        });
+
+        html += "</tbody></table>";
+        postsTableWrapper.innerHTML = html;
+
+        // Attach event listeners
+        postsTableWrapper.querySelectorAll("[data-open]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const id = btn.getAttribute("data-open");
+            window.open("news.html?id=" + id, "_blank");
+          });
+        });
+
+        postsTableWrapper.querySelectorAll("[data-delete]").forEach((btn) => {
+          btn.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            const id = btn.getAttribute("data-delete");
+            const ok = confirm("Delete this post permanently?");
+            if (!ok) return;
+            try {
+              await db.collection("posts").doc(id).delete();
+              const row = btn.closest("tr");
+              if (row) row.remove();
+            } catch (err) {
+              console.error("Delete error:", err);
+              alert("Error deleting post: " + err.message);
+            }
+          });
+        });
+      }
+
+      async function loadPostsForAdmin() {
+        try {
+          const snap = await db
+            .collection("posts")
+            .orderBy("createdAt", "desc")
+            .limit(50)
+            .get();
+
+          const docs = [];
+          snap.forEach((doc) => docs.push(doc));
+          renderPostsTable(docs);
+        } catch (e) {
+          console.error("Admin posts load error:", e);
+          postsTableWrapper.innerHTML =
+            "<p>Error loading posts for admin.</p>";
+        }
+      }
+
+      async function checkAdminAndLoad(user) {
+        if (!user) {
+          adminStatusEl.textContent =
+            "You must be logged in to access admin panel.";
+          postsSection.style.display = "none";
+          return;
+        }
+
+        try {
+          const doc = await db.collection("users").doc(user.uid).get();
+          const data = doc.exists ? doc.data() : null;
+          if (data && data.role === "admin") {
+            isAdmin = true;
+            adminStatusEl.textContent =
+              "Logged in as " +
+              (user.email || "unknown") +
+              " (admin access)";
+            postsSection.style.display = "block";
+            loadPostsForAdmin();
+          } else {
+            isAdmin = false;
+            adminStatusEl.textContent =
+              "You are not an admin. Access denied.";
+            postsSection.style.display = "none";
+          }
+        } catch (e) {
+          console.error("Admin check error:", e);
+          adminStatusEl.textContent =
+            "Error checking admin access. See console.";
+          postsSection.style.display = "none";
+        }
+      }
+
+      firebase.auth().onAuthStateChanged((user) => {
+        currentUser = user;
+        checkAdminAndLoad(user);
+      });
+    </script>
+  </body>
+</html>
