@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return R * c;
   }
 
+  // Always show km + meters (like index.html)
   function formatDistance(userLat, userLng, loc) {
     if (
       !loc ||
@@ -72,9 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const roundedKm = Math.round(distKm * 10) / 10;
     const distM = Math.round(distKm * 1000);
 
-    if (distKm < 1) {
-      return `${distM} m away`;
-    }
     return `${roundedKm} km (${distM} m) away`;
   }
 
