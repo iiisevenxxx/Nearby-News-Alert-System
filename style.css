@@ -1,4 +1,4 @@
-/* BASIC RESET */
+\/* BASIC RESET */
 * {
   box-sizing: border-box;
 }
@@ -42,6 +42,14 @@ body {
 .app-title {
   font-weight: 600;
   font-size: 18px;
+}
+
+.app-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
+  margin-right: 6px;
 }
 
 /* Side menu */
@@ -352,14 +360,13 @@ button.full-width {
 /* MAP PAGE */
 
 .map-page-container {
-  position: relative;            /* NEW */
+  position: relative;
   height: calc(100vh - 56px);
   width: 100%;
   max-width: 100%;
   padding: 0;
   margin: 0;
 }
-
 
 #map {
   width: 100%;
@@ -398,14 +405,3 @@ button.full-width {
     font-size: 19px;
   }
 }
-
-
-
-.app-logo {
-  width: 24px;        /* size chhota-bada yahin se control hoga */
-  height: 24px;
-  border-radius: 6px; /* chaho to 50% karke circle bhi bana sakte ho */
-  object-fit: cover;
-  margin-right: 6px;  /* text se thoda gap */
-}
-
