@@ -37,7 +37,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  if (!initFirebase()) return;
+  if (!initFirebase()) {
+    if (postBtn) postBtn.disabled = true;
+    if (loadNearbyBtn) loadNearbyBtn.disabled = true;
+    return;
+  }
 
   // ---------- HELPERS ----------
   function haversineDistance(lat1, lon1, lat2, lon2) {
@@ -55,29 +59,26 @@ document.addEventListener("DOMContentLoaded", () => {
     return R * c;
   }
 
+  function formatDistance(userLat, userLng, loc) {
+    if (
+      !loc ||
+      typeof loc.latitude !== "number" ||
+      typeof loc.longitude !== "number"
+    ) {
+      return "";
+    }
+    const distKm = haversineDistance(
+      userLat,
+      userLng,
+      loc.latitude,
+      loc.longitude
+    );
+    const roundedKm = Math.round(distKm * 10) / 10;
+    const distM = Math.round(distKm * 1000);
 
-function formatDistance(userLat, userLng, loc) {
-  if (
-    !loc ||
-    typeof loc.latitude !== "number" ||
-    typeof loc.longitude !== "number"
-  ) {
-    return "";
+    // Hamesha km + meters
+    return `${roundedKm} km (${distM} m) away`;
   }
-  const distKm = haversineDistance(
-    userLat,
-    userLng,
-    loc.latitude,
-    loc.longitude
-  );
-  const roundedKm = Math.round(distKm * 10) / 10;
-  const distM = Math.round(distKm * 1000);
-
-  // Hamesha km + meters
-  return `${roundedKm} km (${distM} m) away`;
-}
-
-
 
   function setAuthUI(user) {
     currentUser = user;
@@ -357,7 +358,12 @@ function formatDistance(userLat, userLng, loc) {
     const content = data.content || "";
     const address = data.address || "";
 
-    let line = `${title} - ${content}`;
+    const fullContent =
+      content.length > 120
+        ? content.slice(0, 120).trimEnd() + "..."
+        : content;
+
+    let line = `${title} - ${fullContent}`;
     if (distanceText) line += ` (${distanceText})`;
     if (address) line += ` • ${address}`;
 
