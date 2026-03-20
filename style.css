@@ -1,4 +1,4 @@
-\/* BASIC RESET */
+/* BASIC RESET */
 * {
   box-sizing: border-box;
 }
@@ -281,7 +281,7 @@ button.full-width {
   gap: 8px;
 }
 
-/* ACCOUNT PAGE SIMPLE LAYOUT (if needed) */
+/* ACCOUNT PAGE */
 
 .account-container {
   max-width: 600px;
@@ -289,7 +289,7 @@ button.full-width {
   padding: 0 16px 40px;
 }
 
-/* NEWS DETAIL PAGE (article style) */
+/* NEWS DETAIL PAGE */
 
 .news-detail-container {
   max-width: 720px;
@@ -404,4 +404,67 @@ button.full-width {
   #newsTitle {
     font-size: 19px;
   }
+}
+
+/* DARK MODE */
+
+body.dark {
+  background: #020617;
+  color: #e5e7eb;
+}
+
+body.dark .top-nav {
+  background: #020617;
+  color: #e5e7eb;
+}
+
+body.dark .side-menu {
+  background: #020617;
+}
+
+body.dark .side-menu a {
+  color: #e5e7eb;
+}
+
+body.dark .side-menu a:hover {
+  background: #111827;
+}
+
+body.dark .panel,
+body.dark .news-card {
+  background: #020617;
+  color: #e5e7eb;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.7);
+}
+
+body.dark .news-card p,
+body.dark .news-card .news-meta-small,
+body.dark .auth-status {
+  color: #9ca3af;
+}
+
+body.dark input[type="text"],
+body.dark input[type="email"],
+body.dark input[type="password"],
+body.dark input[type="file"],
+body.dark textarea {
+  background: #020617;
+  color: #e5e7eb;
+  border-color: #4b5563;
+}
+
+body.dark .app-footer {
+  color: #6b7280;
+}
+
+body.dark .news-detail-container {
+  background: #020617;
+}
+
+body.dark #newsBody {
+  color: #e5e7eb;
+}
+
+body.dark .map-legend {
+  background: rgba(15, 23, 42, 0.95);
 }
