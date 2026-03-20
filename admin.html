@@ -61,75 +61,226 @@
         font-size: 11px;
         background: #e5e7eb;
         color: #374151;
+        margin-right: 4px;
+        margin-top: 2px;
       }
 
-      .danger-btn {
-        background: #dc2626;
+      .small-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 10px;
+        font-size: 12px;
+        border-radius: 999px;
+        border: 1px solid #d1d5db;
+        background: #f9fafb;
+        cursor: pointer;
+        transition: background 0.15s, border-color 0.15s, transform 0.05s;
       }
 
-      .danger-btn:hover {
-        background: #b91c1c;
+      .small-btn:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+      }
+
+      .small-btn:active {
+        transform: translateY(1px);
+      }
+
+      .section-card {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        padding: 14px 16px 16px;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+      }
+
+      .section-card h3 {
+        margin-top: 0;
+        margin-bottom: 8px;
+        font-size: 16px;
+      }
+
+      .section-card p {
+        margin: 4px 0;
+        font-size: 13px;
+        color: #4b5563;
+      }
+
+      .badge-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        margin-left: 6px;
+      }
+
+      .danger-badge {
+        background: #fef2f2;
+        color: #b91c1c;
+      }
+
+      .muted {
+        color: #6b7280;
+        font-size: 12px;
+      }
+
+      .top-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .top-row-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .logout-btn {
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid #dc2626;
+        background: #fef2f2;
+        color: #b91c1c;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      .logout-btn:hover {
+        background: #fee2e2;
+      }
+
+      .readonly-input {
+        width: 100%;
+        border-radius: 999px;
+        border: 1px solid #e5e7eb;
+        padding: 6px 10px;
+        font-size: 12px;
+        background: #f9fafb;
+        color: #374151;
+        margin-top: 4px;
+      }
+
+      .readonly-input:focus {
+        outline: none;
+        border-color: #d1d5db;
+      }
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .info-item {
+        font-size: 12px;
+        color: #4b5563;
+      }
+
+      .info-label {
+        font-weight: 500;
+        color: #111827;
+      }
+
+      @media (max-width: 640px) {
+        .top-row {
+          align-items: flex-start;
+        }
+        .top-row-right {
+          width: 100%;
+          justify-content: flex-start;
+        }
       }
     </style>
   </head>
   <body>
-    <!-- Navbar -->
-    <header class="top-nav">
-      <div class="nav-left">
-        <button id="menuToggle" class="menu-btn">☰</button>
-        <img src="logo.png" alt="Nearby News logo" class="app-logo" />
-        <span class="app-title">Nearby News</span>
+    <div class="admin-container">
+      <div class="section-card admin-header">
+        <div class="top-row">
+          <div>
+            <h2 style="margin: 0; font-size: 20px;">
+              Nearby News Admin
+              <span class="admin-badge">Internal tools</span>
+            </h2>
+            <p id="adminStatus" class="muted">
+              Checking admin access...
+            </p>
+            <p class="admin-warning">
+              Warning: This panel is only for trusted admins. Changes here
+              are live and affect all users.
+            </p>
+          </div>
+          <div class="top-row-right">
+            <button
+              id="logoutBtn"
+              type="button"
+              class="logout-btn"
+              onclick="firebase.auth().signOut()"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
       </div>
-      <nav id="sideMenu" class="side-menu">
-        <a href="index.html">Home</a>
-        <a href="login.html">Login / Signup</a>
-        <a href="account.html">Account</a>
-        <a href="app.html">Create / Nearby News</a>
-        <a href="map.html">Live Map</a>
-        <a href="admin.html">Admin</a>
-      </nav>
-      <div id="backdrop" class="backdrop"></div>
-    </header>
 
-    <main class="admin-container">
-      <div class="admin-header">
-        <h2>
-          Admin Panel
-          <span class="admin-badge">Restricted</span>
-        </h2>
-        <p class="admin-warning">
-          Only admin users should access this page. Actions here are permanent (post delete).
-        </p>
-        <p id="adminStatus" class="auth-status">Checking admin access...</p>
-      </div>
+      <div id="postsSection" class="section-card" style="display: none;">
+        <div class="info-row" style="margin-bottom: 8px;">
+          <div class="info-item">
+            <span class="info-label">Posts management</span>
+            <span class="badge-pill">Live Firestore data</span>
+          </div>
+        </div>
 
-      <section id="postsSection" style="display: none;">
         <h3>All Posts</h3>
-        <p style="font-size: 13px; color: #4b5563;">
-          Latest 50 posts. You can delete any post or open it.
-        </p>
-        <div id="postsTableWrapper"></div>
-      </section>
-    </main>
+        <button
+          id="importRandomNewsBtn"
+          class="small-btn"
+          style="margin-bottom: 8px;"
+        >
+          Import 60 random news
+        </button>
 
-    <!-- Firebase v8 -->
+        <p class="muted">
+          Latest posts across the platform (including external news). You can
+          review and delete content here.
+        </p>
+
+        <div id="postsTableWrapper" style="margin-top: 10px;"></div>
+      </div>
+    </div>
+
+    <!-- Firebase scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="firebaseConfig.js"></script>
-
-    <!-- Navbar JS -->
-    <script src="nav.js" defer></script>
 
     <script>
+      // TODO: yahan tumhara existing firebaseConfig use karo
+      var firebaseConfig = {
+        apiKey: "YOUR_FIREBASE_API_KEY",
+        authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
+        projectId: "YOUR_FIREBASE_PROJECT_ID"
+        // baaki fields jo tum pehle se use kar rahe ho
+      };
+      firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
+    </script>
+
+    <script>
+      let currentUser = null;
+      let isAdmin = false;
 
       const adminStatusEl = document.getElementById("adminStatus");
       const postsSection = document.getElementById("postsSection");
       const postsTableWrapper = document.getElementById("postsTableWrapper");
-
-      let currentUser = null;
-      let isAdmin = false;
 
       function renderPostsTable(docs) {
         if (!docs.length) {
@@ -143,8 +294,10 @@
               <tr>
                 <th>Title</th>
                 <th>Content</th>
-                <th>User ID</th>
+                <th>Author</th>
+                <th>Location</th>
                 <th>Created</th>
+                <th>External?</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -153,23 +306,25 @@
 
         docs.forEach((doc) => {
           const data = doc.data();
-          const title = (data.title || "Untitled").substring(0, 60);
-          const content = (data.content || "").substring(0, 80);
-          const userId = data.userId || "unknown";
-          const created =
-            data.createdAt && data.createdAt.toDate
-              ? data.createdAt.toDate().toLocaleString("en-IN")
-              : "N/A";
+          const createdAt = data.createdAt
+            ? data.createdAt.toDate().toLocaleString()
+            : "-";
+
+          const locationText = data.address || "Unknown";
+          const isExternal = data.external ? "Yes" : "No";
 
           html += `
-            <tr data-id="${doc.id}">
-              <td>${title}</td>
-              <td>${content}</td>
-              <td><span class="tag-pill">${userId}</span></td>
-              <td>${created}</td>
+            <tr>
+              <td>${data.title || ""}</td>
+              <td>${(data.content || "").slice(0, 120)}...</td>
+              <td>${data.userId || ""}</td>
+              <td>${locationText}</td>
+              <td>${createdAt}</td>
+              <td>${isExternal}</td>
               <td>
-                <button class="small-btn" data-open="${doc.id}">Open</button>
-                <button class="small-btn danger-btn" data-delete="${doc.id}">Delete</button>
+                <button class="small-btn" onclick="deletePost('${doc.id}')">
+                  Delete
+                </button>
               </td>
             </tr>
           `;
@@ -177,35 +332,21 @@
 
         html += "</tbody></table>";
         postsTableWrapper.innerHTML = html;
+      }
 
-        // Attach event listeners
-        postsTableWrapper.querySelectorAll("[data-open]").forEach((btn) => {
-          btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const id = btn.getAttribute("data-open");
-            window.open("news.html?id=" + id, "_blank");
-          });
-        });
-
-        postsTableWrapper.querySelectorAll("[data-delete]").forEach((btn) => {
-          btn.addEventListener("click", async (e) => {
-            e.stopPropagation();
-            const id = btn.getAttribute("data-delete");
-            const ok = confirm("Delete this post permanently?");
-            if (!ok) return;
-            try {
-              await db.collection("posts").doc(id).delete();
-              const row = btn.closest("tr");
-              if (row) row.remove();
-            } catch (err) {
-              console.error("Delete error:", err);
-              alert("Error deleting post: " + err.message);
-            }
-          });
-        });
+      async function deletePost(postId) {
+        if (!confirm("Delete this post?")) return;
+        try {
+          await db.collection("posts").doc(postId).delete();
+          loadPostsForAdmin();
+        } catch (e) {
+          console.error("Delete post error:", e);
+          alert("Error deleting post.");
+        }
       }
 
       async function loadPostsForAdmin() {
+        postsTableWrapper.innerHTML = "<p>Loading posts...</p>";
         try {
           const snap = await db
             .collection("posts")
@@ -259,6 +400,146 @@
       firebase.auth().onAuthStateChanged((user) => {
         currentUser = user;
         checkAdminAndLoad(user);
+      });
+
+      // =========================
+      // NewsData.io import (60)
+      // =========================
+
+      const NEWSDATA_API_KEY =
+        "pub_6b1a67037a52456cb5fe42751cbbbed7"; // tumhari key [web:369]
+
+      async function import60RandomNews() {
+        if (!NEWSDATA_API_KEY) {
+          alert("NewsData.io API key not set");
+          return;
+        }
+
+        const btn = document.getElementById("importRandomNewsBtn");
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "Importing 60 news...";
+        }
+
+        try {
+          const totalNeeded = 60;
+          const allArticles = [];
+          let nextPage = null;
+
+          while (allArticles.length < totalNeeded) {
+            const params = {
+              apikey: NEWSDATA_API_KEY,
+              language: "en"
+              // country: "in",   // sirf India ke liye
+              // q: "india",      // keyword
+              // category: "top,world"
+            };
+
+            if (nextPage) {
+              params.page = nextPage;
+            }
+
+            const url =
+              "https://newsdata.io/api/1/latest?" +
+              new URLSearchParams(params).toString();
+
+            const res = await fetch(url);
+            if (!res.ok) {
+              throw new Error("NewsData.io error: " + res.status);
+            }
+            const data = await res.json(); // latest endpoint JSON [web:369][file:377]
+
+            if (!data.results || !Array.isArray(data.results)) {
+              break;
+            }
+
+            allArticles.push(...data.results);
+
+            if (!data.nextPage) {
+              break;
+            }
+            nextPage = data.nextPage;
+
+            if (allArticles.length >= totalNeeded) {
+              break;
+            }
+          }
+
+          const articles = allArticles.slice(0, totalNeeded);
+          if (!articles.length) {
+            alert("No articles returned from NewsData.io");
+            return;
+          }
+
+          const batch = db.batch();
+          const now = firebase.firestore.FieldValue.serverTimestamp();
+
+          articles.forEach((article) => {
+            const ref = db.collection("posts").doc();
+
+            const title = article.title || "External news";
+            const description =
+              article.description ||
+              article.content ||
+              article.summary ||
+              "";
+            const content = (description || "").slice(0, 900);
+
+            let published = now;
+            if (article.pubDate) {
+              const d = new Date(article.pubDate);
+              if (!isNaN(d.getTime())) {
+                published = d;
+              }
+            }
+
+            batch.set(ref, {
+              title,
+              content,
+              sourceUrl: article.link || "",
+              sourceName: article.source_name || article.source_id || "",
+              createdAt: now,
+              publishedAt: published,
+              userId: "system-news",
+              location: {
+                latitude: 0,
+                longitude: 0
+              },
+              address: "World News",
+              external: true,
+              imageUrl: article.image_url || "",
+              categories: article.category || [],
+              sentiment: article.sentiment || ""
+            });
+          });
+
+          await batch.commit();
+          alert("Imported " + articles.length + " news items.");
+          loadPostsForAdmin();
+        } catch (e) {
+          console.error("Import 60 news error:", e);
+          alert("Error importing news: " + e.message);
+        } finally {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = "Import 60 random news";
+          }
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const importRandomNewsBtn = document.getElementById(
+          "importRandomNewsBtn"
+        );
+        if (importRandomNewsBtn) {
+          importRandomNewsBtn.addEventListener("click", () => {
+            if (!isAdmin) {
+              alert("Only admin can import external news.");
+              return;
+            }
+            import60RandomNews();
+          });
+        }
       });
     </script>
   </body>
