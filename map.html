@@ -32,6 +32,7 @@
         <a href="account.html">Account</a>
         <a href="app.html">Create / Nearby News</a>
         <a href="map.html">Live Map</a>
+        <a href="admin.html">Admin</a>
       </nav>
       <div id="backdrop" class="backdrop"></div>
     </header>
@@ -56,7 +57,7 @@
     <script src="firebaseConfig.js"></script>
 
     <!-- Navbar JS -->
-    <script src="nav.js"></script>
+    <script src="nav.js" defer></script>
 
     <script>
       const db = firebase.firestore();
@@ -99,7 +100,9 @@
         const lng = data.location.longitude;
         const title = data.title || "Untitled News";
         const content = data.content || "";
-        const snippet = content.length > 80 ? content.slice(0, 80) + "..." : content;
+        const full = content;
+        const snippet =
+          full.length > 80 ? full.slice(0, 80).trimEnd() + "..." : full;
         const address = data.address || "";
 
         const popupHtml = `
