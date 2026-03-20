@@ -400,9 +400,12 @@ button.full-width {
 }
 
 
+
 .app-logo {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  width: 24px;        /* size chhota-bada yahin se control hoga */
+  height: 24px;
+  border-radius: 6px; /* chaho to 50% karke circle bhi bana sakte ho */
   object-fit: cover;
+  margin-right: 6px;  /* text se thoda gap */
 }
+
