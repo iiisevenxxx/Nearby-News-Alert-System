@@ -119,12 +119,15 @@ body {
   gap: 16px;
 }
 
-.panel {
-  background: #fff;
-  border-radius: 8px;
-  padding: 12px 14px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
-  flex: 1 1 260px;
+/* Unified card styles: panels + admin cards */
+.panel,
+.section-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 14px 16px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
 }
 
 .panel-wide {
@@ -165,15 +168,42 @@ button {
   font-size: 14px;
   background: #2563eb;
   color: #fff;
+  transition: background 0.15s ease, transform 0.05s ease;
 }
 
 button:hover {
   background: #1d4ed8;
 }
 
-button.small-btn {
+button:active {
+  transform: translateY(1px);
+}
+
+/* Shared small button style (used in app + admin) */
+button.small-btn,
+.small-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 4px 10px;
   font-size: 12px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  color: #111827;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.05s;
+}
+
+button.small-btn:hover,
+.small-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+button.small-btn:active,
+.small-btn:active {
+  transform: translateY(1px);
 }
 
 button.full-width {
@@ -406,6 +436,23 @@ button.full-width {
   }
 }
 
+/* Admin responsive tweaks */
+@media (max-width: 640px) {
+  .top-row {
+    align-items: flex-start;
+  }
+  .top-row-right {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .admin-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
 /* DARK MODE */
 
 body.dark {
@@ -431,10 +478,12 @@ body.dark .side-menu a:hover {
 }
 
 body.dark .panel,
-body.dark .news-card {
+body.dark .news-card,
+body.dark .section-card {
   background: #020617;
   color: #e5e7eb;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.7);
+  border-color: #1f2937;
 }
 
 body.dark .news-card p,
@@ -469,7 +518,57 @@ body.dark .map-legend {
   background: rgba(15, 23, 42, 0.95);
 }
 
+/* DARK MODE – admin specific */
+
+body.dark .admin-container {
+  background: transparent;
+}
+
+body.dark .admin-table {
+  background: #020617;
+  color: #e5e7eb;
+  border-color: #1f2937;
+}
+
+body.dark .admin-table th {
+  background: #020617;
+  border-color: #1f2937;
+}
+
+body.dark .admin-table td {
+  border-color: #1f2937;
+}
+
+body.dark .admin-warning {
+  color: #fecaca;
+}
+
+body.dark .badge-pill {
+  background: #1d4ed8;
+  color: #e5e7eb;
+}
+
+body.dark .danger-badge {
+  background: #7f1d1d;
+  color: #fee2e2;
+}
+
+body.dark .muted {
+  color: #9ca3af;
+}
+
+body.dark .logout-btn {
+  background: #7f1d1d;
+  border-color: #b91c1c;
+  color: #fee2e2;
+}
+
+body.dark .logout-btn:hover {
+  background: #991b1b;
+}
+
 /* Admin page styles */
+
 .admin-container {
   max-width: 1000px;
   margin: 16px auto 40px;
@@ -524,37 +623,6 @@ body.dark .map-legend {
   color: #374151;
   margin-right: 4px;
   margin-top: 2px;
-}
-
-.small-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 10px;
-  font-size: 12px;
-  border-radius: 999px;
-  border: 1px solid #d1d5db;
-  background: #f9fafb;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, transform 0.05s;
-}
-
-.small-btn:hover {
-  background: #f3f4f6;
-  border-color: #9ca3af;
-}
-
-.small-btn:active {
-  transform: translateY(1px);
-}
-
-.section-card {
-  background: #ffffff;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  padding: 14px 16px 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
 .section-card h3 {
@@ -649,14 +717,4 @@ body.dark .map-legend {
 .info-label {
   font-weight: 500;
   color: #111827;
-}
-
-@media (max-width: 640px) {
-  .top-row {
-    align-items: flex-start;
-  }
-  .top-row-right {
-    width: 100%;
-    justify-content: flex-start;
-  }
 }
