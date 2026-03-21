@@ -57,6 +57,10 @@
         </button>
 
         <p class="muted">
+          Imports 60 latest headlines from NewsData.io (12h delayed feed, external links only).
+        </p>
+
+        <p class="muted">
           Latest posts across the platform (including external news). You can
           review and delete content here.
         </p>
@@ -103,6 +107,7 @@
                 <th>Author</th>
                 <th>Location</th>
                 <th>Created</th>
+                <th>Source</th>
                 <th>External?</th>
                 <th>Actions</th>
               </tr>
@@ -117,7 +122,13 @@
             : "-";
 
           const locationText = data.address || "Unknown";
-          const isExternal = data.external ? "Yes" : "No";
+
+          const sourceText =
+            data.sourceName || data.sourceUrl || (data.external ? "External" : "User");
+
+          const isExternalBadge = data.external
+            ? '<span class="badge-pill">External</span>'
+            : '<span class="badge-pill danger-badge">Local</span>';
 
           html += `
             <tr>
@@ -126,7 +137,8 @@
               <td>${data.userId || ""}</td>
               <td>${locationText}</td>
               <td>${createdAt}</td>
-              <td>${isExternal}</td>
+              <td>${sourceText}</td>
+              <td>${isExternalBadge}</td>
               <td>
                 <button class="small-btn" onclick="deletePost('${doc.id}')">
                   Delete
@@ -175,12 +187,13 @@
           adminStatusEl.textContent =
             "You must be logged in to access admin panel.";
           postsSection.style.display = "none";
+          isAdmin = false;
           return;
         }
 
         try {
-          const doc = await db.collection("users").doc(user.uid).get();
-          const data = doc.exists ? doc.data() : null;
+          const docSnap = await db.collection("users").doc(user.uid).get();
+          const data = docSnap.exists ? docSnap.data() : null;
 
           const hasAdminRole =
             data &&
@@ -188,25 +201,27 @@
               data.isAdmin === true ||
               data.is_admin === true);
 
-          if (hasAdminRole) {
-            isAdmin = true;
-            adminStatusEl.textContent =
-              "Logged in as " +
-              (user.email || "unknown") +
-              " (admin access)";
-            postsSection.style.display = "block";
-            loadPostsForAdmin();
-          } else {
+          if (!hasAdminRole) {
             isAdmin = false;
             adminStatusEl.textContent =
               "You are not an admin. Access denied.";
             postsSection.style.display = "none";
+            return;
           }
+
+          isAdmin = true;
+          adminStatusEl.textContent =
+            "Logged in as " +
+            (user.email || "unknown") +
+            " (admin access)";
+          postsSection.style.display = "block";
+          loadPostsForAdmin();
         } catch (e) {
           console.error("Admin check error:", e);
           adminStatusEl.textContent =
             "Error checking admin access. See console.";
           postsSection.style.display = "none";
+          isAdmin = false;
         }
       }
 
@@ -233,12 +248,16 @@
         try {
           const totalNeeded = 60;
           const allArticles = [];
+          const seenIds = new Set();
           let nextPage = null;
 
           while (allArticles.length < totalNeeded) {
             const params = {
               apikey: NEWSDATA_API_KEY,
               language: "en"
+              // country: "in",
+              // q: "india",
+              // category: "top,world"
             };
 
             if (nextPage) {
@@ -251,24 +270,22 @@
 
             const res = await fetch(url);
             if (!res.ok) {
-              throw new Error("NewsData.io error: " + res.status);
+              const msg = "NewsData.io error " + res.status;
+              throw new Error(msg);
             }
-            const data = await res.json();
+            const data = await res.json(); // latest endpoint JSON [web:369][web:399]
 
-            if (!data.results || !Array.isArray(data.results)) {
-              break;
+            const results = Array.isArray(data.results) ? data.results : [];
+            for (const a of results) {
+              const id = a.article_id || a.link;
+              if (!id || seenIds.has(id)) continue;
+              seenIds.add(id);
+              allArticles.push(a);
+              if (allArticles.length >= totalNeeded) break;
             }
 
-            allArticles.push(...data.results);
-
-            if (!data.nextPage) {
-              break;
-            }
+            if (!data.nextPage || allArticles.length >= totalNeeded) break;
             nextPage = data.nextPage;
-
-            if (allArticles.length >= totalNeeded) {
-              break;
-            }
           }
 
           const articles = allArticles.slice(0, totalNeeded);
@@ -324,7 +341,7 @@
           loadPostsForAdmin();
         } catch (e) {
           console.error("Import 60 news error:", e);
-          alert("Error importing news: " + e.message);
+          alert(e.message || "Error importing news.");
         } finally {
           if (btn) {
             btn.disabled = false;
