@@ -40,14 +40,54 @@
       </div>
 
       <div id="postsSection" class="section-card" style="display: none;">
+        <!-- Date filter row -->
         <div class="info-row" style="margin-bottom: 8px;">
           <div class="info-item">
-            <span class="info-label">Posts management</span>
-            <span class="badge-pill">Live Firestore data</span>
+            <span class="info-label">Filter by date</span>
+            <div
+              style="
+                margin-top: 4px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+              "
+            >
+              <input
+                type="date"
+                id="filterStartDate"
+                class="readonly-input"
+              />
+              <input
+                type="date"
+                id="filterEndDate"
+                class="readonly-input"
+              />
+              <button class="small-btn" id="applyDateFilterBtn">
+                Apply
+              </button>
+              <button class="small-btn" id="clearDateFilterBtn">
+                Clear
+              </button>
+            </div>
           </div>
         </div>
 
-        <h3>All Posts</h3>
+        <!-- Header + pagination controls -->
+        <div class="info-row" style="margin: 6px 0;">
+          <div class="info-item">
+            <span class="info-label">All Posts</span>
+            <span class="badge-pill">Live Firestore data</span>
+          </div>
+          <div class="info-item">
+            <button class="small-btn" id="prevPageBtn" disabled>
+              Prev
+            </button>
+            <button class="small-btn" id="nextPageBtn" disabled>
+              Next
+            </button>
+          </div>
+        </div>
+
         <button
           id="importRandomNewsBtn"
           class="small-btn"
@@ -57,7 +97,8 @@
         </button>
 
         <p class="muted">
-          Imports 60 latest headlines from NewsData.io (12h delayed feed, external links only).
+          Imports 60 latest headlines from NewsData.io (12h delayed feed,
+          external links only).
         </p>
 
         <p class="muted">
@@ -91,6 +132,52 @@
       const adminStatusEl = document.getElementById("adminStatus");
       const postsSection = document.getElementById("postsSection");
       const postsTableWrapper = document.getElementById("postsTableWrapper");
+
+      const PAGE_SIZE = 90;
+
+      let pagination = {
+        lastDoc: null,
+        firstDoc: null,
+        hasNext: false,
+        hasPrev: false,
+        stack: []
+      };
+
+      let currentFilter = {
+        start: null,
+        end: null
+      };
+
+      const prevPageBtn = document.getElementById("prevPageBtn");
+      const nextPageBtn = document.getElementById("nextPageBtn");
+      const filterStartInput = document.getElementById("filterStartDate");
+      const filterEndInput = document.getElementById("filterEndDate");
+      const applyDateFilterBtn =
+        document.getElementById("applyDateFilterBtn");
+      const clearDateFilterBtn =
+        document.getElementById("clearDateFilterBtn");
+
+      function updatePaginationButtons() {
+        if (!prevPageBtn || !nextPageBtn) return;
+        prevPageBtn.disabled = !pagination.hasPrev;
+        nextPageBtn.disabled = !pagination.hasNext;
+      }
+
+      function buildBaseQuery() {
+        let q = db.collection("posts").orderBy("createdAt", "desc");
+
+        if (currentFilter.start && currentFilter.end) {
+          q = q
+            .where("createdAt", ">=", currentFilter.start)
+            .where("createdAt", "<=", currentFilter.end);
+        } else if (currentFilter.start) {
+          q = q.where("createdAt", ">=", currentFilter.start);
+        } else if (currentFilter.end) {
+          q = q.where("createdAt", "<=", currentFilter.end);
+        }
+
+        return q;
+      }
 
       function renderPostsTable(docs) {
         if (!docs.length) {
@@ -166,19 +253,102 @@
       async function loadPostsForAdmin() {
         postsTableWrapper.innerHTML = "<p>Loading posts...</p>";
         try {
-          const snap = await db
-            .collection("posts")
-            .orderBy("createdAt", "desc")
-            .limit(50)
-            .get();
+          let q = buildBaseQuery().limit(PAGE_SIZE);
+
+          const snap = await q.get();
 
           const docs = [];
           snap.forEach((doc) => docs.push(doc));
           renderPostsTable(docs);
+
+          if (docs.length) {
+            pagination.firstDoc = docs[0];
+            pagination.lastDoc = docs[docs.length - 1];
+            pagination.hasNext = docs.length === PAGE_SIZE;
+            pagination.hasPrev = pagination.stack.length > 0;
+          } else {
+            pagination.firstDoc = null;
+            pagination.lastDoc = null;
+            pagination.hasNext = false;
+            pagination.hasPrev = pagination.stack.length > 0;
+          }
+
+          updatePaginationButtons();
         } catch (e) {
           console.error("Admin posts load error:", e);
           postsTableWrapper.innerHTML =
             "<p>Error loading posts for admin.</p>";
+        }
+      }
+
+      async function loadNextPage() {
+        if (!pagination.lastDoc) return;
+
+        postsTableWrapper.innerHTML = "<p>Loading next page...</p>";
+
+        try {
+          if (pagination.firstDoc) {
+            pagination.stack.push(pagination.firstDoc);
+          }
+
+          let q = buildBaseQuery()
+            .startAfter(pagination.lastDoc)
+            .limit(PAGE_SIZE);
+
+          const snap = await q.get();
+          const docs = [];
+          snap.forEach((doc) => docs.push(doc));
+          renderPostsTable(docs);
+
+          if (docs.length) {
+            pagination.firstDoc = docs[0];
+            pagination.lastDoc = docs[docs.length - 1];
+            pagination.hasNext = docs.length === PAGE_SIZE;
+            pagination.hasPrev = pagination.stack.length > 0;
+          } else {
+            pagination.hasNext = false;
+          }
+
+          updatePaginationButtons();
+        } catch (e) {
+          console.error("Next page error:", e);
+          postsTableWrapper.innerHTML =
+            "<p>Error loading next page.</p>";
+        }
+      }
+
+      async function loadPrevPage() {
+        if (!pagination.stack.length) return;
+
+        postsTableWrapper.innerHTML =
+          "<p>Loading previous page...</p>";
+
+        try {
+          const prevCursor = pagination.stack.pop();
+
+          let q = buildBaseQuery()
+            .startAt(prevCursor)
+            .limit(PAGE_SIZE);
+
+          const snap = await q.get();
+          const docs = [];
+          snap.forEach((doc) => docs.push(doc));
+          renderPostsTable(docs);
+
+          if (docs.length) {
+            pagination.firstDoc = docs[0];
+            pagination.lastDoc = docs[docs.length - 1];
+            pagination.hasPrev = pagination.stack.length > 0;
+            pagination.hasNext = true;
+          } else {
+            pagination.hasPrev = pagination.stack.length > 0;
+          }
+
+          updatePaginationButtons();
+        } catch (e) {
+          console.error("Prev page error:", e);
+          postsTableWrapper.innerHTML =
+            "<p>Error loading previous page.</p>";
         }
       }
 
@@ -215,6 +385,15 @@
             (user.email || "unknown") +
             " (admin access)";
           postsSection.style.display = "block";
+
+          // reset pagination on fresh login
+          pagination = {
+            lastDoc: null,
+            firstDoc: null,
+            hasNext: false,
+            hasPrev: false,
+            stack: []
+          };
           loadPostsForAdmin();
         } catch (e) {
           console.error("Admin check error:", e);
@@ -253,7 +432,7 @@
 
           while (allArticles.length < totalNeeded) {
             const params = {
-              apikey: NEWSDATA_API_KEY,
+              apikey: pub_6b1a67037a52456cb5fe42751cbbbed7,
               language: "en"
               // country: "in",
               // q: "india",
@@ -273,9 +452,11 @@
               const msg = "NewsData.io error " + res.status;
               throw new Error(msg);
             }
-            const data = await res.json(); // latest endpoint JSON [web:369][web:399]
+            const data = await res.json(); // uses latest endpoint with nextPage [web:369][web:399]
 
-            const results = Array.isArray(data.results) ? data.results : [];
+            const results = Array.isArray(data.results)
+              ? data.results
+              : [];
             for (const a of results) {
               const id = a.article_id || a.link;
               if (!id || seenIds.has(id)) continue;
@@ -338,6 +519,14 @@
 
           await batch.commit();
           alert("Imported " + articles.length + " news items.");
+          // refresh first page with current filter
+          pagination = {
+            lastDoc: null,
+            firstDoc: null,
+            hasNext: false,
+            hasPrev: false,
+            stack: []
+          };
           loadPostsForAdmin();
         } catch (e) {
           console.error("Import 60 news error:", e);
@@ -361,6 +550,68 @@
               return;
             }
             import60RandomNews();
+          });
+        }
+
+        if (nextPageBtn) {
+          nextPageBtn.addEventListener("click", () => {
+            if (!isAdmin) return;
+            loadNextPage();
+          });
+        }
+
+        if (prevPageBtn) {
+          prevPageBtn.addEventListener("click", () => {
+            if (!isAdmin) return;
+            loadPrevPage();
+          });
+        }
+
+        if (applyDateFilterBtn) {
+          applyDateFilterBtn.addEventListener("click", () => {
+            const startVal = filterStartInput.value;
+            const endVal = filterEndInput.value;
+
+            currentFilter.start = startVal
+              ? firebase.firestore.Timestamp.fromDate(
+                  new Date(startVal + "T00:00:00")
+                )
+              : null;
+
+            currentFilter.end = endVal
+              ? firebase.firestore.Timestamp.fromDate(
+                  new Date(endVal + "T23:59:59")
+                )
+              : null;
+
+            pagination = {
+              lastDoc: null,
+              firstDoc: null,
+              hasNext: false,
+              hasPrev: false,
+              stack: []
+            };
+
+            loadPostsForAdmin();
+          });
+        }
+
+        if (clearDateFilterBtn) {
+          clearDateFilterBtn.addEventListener("click", () => {
+            filterStartInput.value = "";
+            filterEndInput.value = "";
+            currentFilter.start = null;
+            currentFilter.end = null;
+
+            pagination = {
+              lastDoc: null,
+              firstDoc: null,
+              hasNext: false,
+              hasPrev: false,
+              stack: []
+            };
+
+            loadPostsForAdmin();
           });
         }
       });
