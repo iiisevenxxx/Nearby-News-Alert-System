@@ -116,13 +116,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <script>
-      // same project jise abhi use kar rahe ho
       var firebaseConfig = {
         apiKey: "AIzaSyAidKMs67_gh4xNLQXiNyDwE4AbhrbvZ7M",
         authDomain: "nearby-news-alert-system.firebaseapp.com",
         projectId: "nearby-news-alert-system"
-        // agar index.html me aur fields (storageBucket, appId, etc.) hon
-        // to unko bhi yaha add kar sakta hai
       };
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
@@ -410,7 +407,6 @@
         checkAdminAndLoad(user);
       });
 
-      // NewsData.io API key – same as before
       const NEWSDATA_API_KEY =
         "pub_6b1a67037a52456cb5fe42751cbbbed7";
 
@@ -436,10 +432,6 @@
             const params = {
               apikey: NEWSDATA_API_KEY,
               language: "en"
-              // yaha pe country / q / category add kar sakta hai agar chaahe
-              // country: "in",
-              // q: "india",
-              // category: "top,world"
             };
 
             if (nextPage) {
@@ -500,15 +492,15 @@
               }
             }
 
-            // location build from NewsData fields
-            const parts = [];
-            if (article.city) parts.push(article.city);
-            if (article.state) parts.push(article.state);
-            if (article.country) parts.push(article.country);
-            if (article.region) parts.push(article.region);
-
-            const humanLocation =
-              parts.length > 0 ? parts.join(", ") : "World News";
+            // State, Country format
+            let humanLocation = "World News";
+            if (article.state && article.country) {
+              humanLocation = article.state + ", " + article.country;
+            } else if (article.country) {
+              humanLocation = article.country;
+            } else if (article.state) {
+              humanLocation = article.state;
+            }
 
             batch.set(ref, {
               title,
