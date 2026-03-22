@@ -101,6 +101,44 @@
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
 
+      // --- Admin reference location for distance (Dahmi Kalan example) ---
+      const ADMIN_REF_LOCATION = {
+        lat: 26.911, // yahan apna exact latitude daalo
+        lng: 75.642  // yahan apna exact longitude daalo
+      };
+      const EARTH_RADIUS_KM = 6371;
+
+      const toRad = (value) => (value * Math.PI) / 180;
+
+      const computeDistanceKm = (loc) => {
+        if (
+          !loc ||
+          typeof loc.latitude !== "number" ||
+          typeof loc.longitude !== "number" ||
+          (loc.latitude === 0 && loc.longitude === 0)
+        ) {
+          return null;
+        }
+
+        const lat1 = ADMIN_REF_LOCATION.lat;
+        const lon1 = ADMIN_REF_LOCATION.lng;
+        const lat2 = loc.latitude;
+        const lon2 = loc.longitude;
+
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(toRad(lat1)) *
+            Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return EARTH_RADIUS_KM * c;
+      };
+
       // --- State ---
       let currentUser = null;
       let isAdmin = false;
@@ -208,12 +246,17 @@
             ? '<span class="badge-pill">External</span>'
             : '<span class="badge-pill danger-badge">Local</span>';
 
+          const distanceKm = computeDistanceKm(data.location);
+          const distanceText =
+            distanceKm != null ? distanceKm.toFixed(1) + " km" : "-";
+
           rowsHtml += `
             <tr>
               <td>${data.title || ""}</td>
               <td>${(data.content || "").slice(0, 120)}...</td>
               <td>${data.userId || ""}</td>
               <td>${locationText}</td>
+              <td>${distanceText}</td>
               <td>${createdAt}</td>
               <td>${sourceText}</td>
               <td>${isExternalBadge}</td>
@@ -234,6 +277,7 @@
                 <th>Content</th>
                 <th>Author</th>
                 <th>Location</th>
+                <th>Distance</th>
                 <th>Created</th>
                 <th>Source</th>
                 <th>External?</th>
