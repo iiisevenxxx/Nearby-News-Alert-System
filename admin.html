@@ -2,9 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Nearby News - Admin Panel</title>
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -17,9 +15,7 @@
               Nearby News Admin
               <span class="admin-badge">Internal tools</span>
             </h2>
-            <p id="adminStatus" class="muted">
-              Checking admin access...
-            </p>
+            <p id="adminStatus" class="muted">Checking admin access...</p>
             <p class="admin-warning">
               Warning: This panel is only for trusted admins. Changes here are live and affect all users.
             </p>
@@ -29,7 +25,8 @@
               id="logoutBtn"
               type="button"
               class="logout-btn"
-              onclick="firebase.auth().signOut()">
+              onclick="firebase.auth().signOut()"
+            >
               Logout
             </button>
           </div>
@@ -47,15 +44,12 @@
                 display: flex;
                 flex-wrap: wrap;
                 gap: 6px;
-              ">
+              "
+            >
               <input type="date" id="filterStartDate" class="readonly-input" />
               <input type="date" id="filterEndDate" class="readonly-input" />
-              <button class="small-btn" id="applyDateFilterBtn">
-                Apply
-              </button>
-              <button class="small-btn" id="clearDateFilterBtn">
-                Clear
-              </button>
+              <button class="small-btn" id="applyDateFilterBtn">Apply</button>
+              <button class="small-btn" id="clearDateFilterBtn">Clear</button>
             </div>
           </div>
         </div>
@@ -67,19 +61,16 @@
             <span class="badge-pill">Live Firestore data</span>
           </div>
           <div class="info-item">
-            <button class="small-btn" id="prevPageBtn" disabled>
-              Prev
-            </button>
-            <button class="small-btn" id="nextPageBtn" disabled>
-              Next
-            </button>
+            <button class="small-btn" id="prevPageBtn" disabled>Prev</button>
+            <button class="small-btn" id="nextPageBtn" disabled>Next</button>
           </div>
         </div>
 
         <button
           id="importRandomNewsBtn"
           class="small-btn"
-          style="margin-bottom: 8px;">
+          style="margin-bottom: 8px;"
+        >
           Import 60 random news
         </button>
 
@@ -105,357 +96,172 @@
       const firebaseConfig = {
         apiKey: "AIzaSyAidKMs67_gh4xNLQXiNyDwE4AbhrbvZ7M",
         authDomain: "nearby-news-alert-system.firebaseapp.com",
-        projectId: "nearby-news-alert-system",
+        projectId: "nearby-news-alert-system"
       };
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
 
-      // --- Admin reference location (Dahmi Kalan / Jaipur side) ---
+      // --- Admin reference location for distance (Dahmi Kalan example) ---
       const ADMIN_REF_LOCATION = {
-        lat: 26.911, // apni exact latitude
-        lng: 75.642, // apni exact longitude
+        lat: 26.911, // yahan apna exact latitude daalo
+        lng: 75.642  // yahan apna exact longitude daalo
       };
       const EARTH_RADIUS_KM = 6371;
 
-      function toRad(value) {
-        return (value * Math.PI) / 180;
-      }
+      const toRad = (value) => (value * Math.PI) / 180;
 
-      function haversineKm(lat1, lng1, lat2, lng2) {
+      const computeDistanceKm = (loc) => {
+        if (
+          !loc ||
+          typeof loc.latitude !== "number" ||
+          typeof loc.longitude !== "number" ||
+          (loc.latitude === 0 && loc.longitude === 0)
+        ) {
+          return null;
+        }
+
+        const lat1 = ADMIN_REF_LOCATION.lat;
+        const lon1 = ADMIN_REF_LOCATION.lng;
+        const lat2 = loc.latitude;
+        const lon2 = loc.longitude;
+
         const dLat = toRad(lat2 - lat1);
-        const dLng = toRad(lng2 - lng1);
+        const dLon = toRad(lon2 - lon1);
+
         const a =
           Math.sin(dLat / 2) * Math.sin(dLat / 2) +
           Math.cos(toRad(lat1)) *
             Math.cos(toRad(lat2)) *
-            Math.sin(dLng / 2) *
-            Math.sin(dLng / 2);
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return EARTH_RADIUS_KM * c;
-      }
-
-      // Country → approx center lat/lng
-      const COUNTRY_COORDS = {
-        india: { lat: 20.5937, lng: 78.9629 },
-        canada: { lat: 56.1304, lng: -106.3468 },
-        "united states of america": { lat: 39.8283, lng: -98.5795 },
-        usa: { lat: 39.8283, lng: -98.5795 },
-        japan: { lat: 36.2048, lng: 138.2529 },
-        china: { lat: 35.8617, lng: 104.1954 },
-        "united kingdom": { lat: 55.3781, lng: -3.436 },
-        uk: { lat: 55.3781, lng: -3.436 },
-        australia: { lat: -25.2744, lng: 133.7751 },
-        nigeria: { lat: 9.082, lng: 8.6753 },
-        "south africa": { lat: -30.5595, lng: 22.9375 },
-        russia: { lat: 61.524, lng: 105.3188 },
-        jamaica: { lat: 18.1096, lng: -77.2975 },
-        "dominican republic": { lat: 18.7357, lng: -70.1627 },
-        ghana: { lat: 7.9465, lng: -1.0232 },
-        "new zealand": { lat: -40.9006, lng: 174.886 },
-        kenya: { lat: -0.0236, lng: 37.9062 },
-        // aur bhi country add kar sakte ho
       };
 
-      function getDistanceForDoc(docData) {
-        // case 1: user nearby news with { location: { lat, lng } }
-        if (
-          docData.location &&
-          typeof docData.location === "object" &&
-          docData.location.lat != null &&
-          docData.location.lng != null
-        ) {
-          const d = haversineKm(
-            ADMIN_REF_LOCATION.lat,
-            ADMIN_REF_LOCATION.lng,
-            docData.location.lat,
-            docData.location.lng
-          );
-          return d.toFixed(1) + " km";
-        }
+      // --- State ---
+      let currentUser = null;
+      let isAdmin = false;
 
-        // case 2: external system-news with string country in `location`
-        if (typeof docData.location === "string") {
-          const key = docData.location.toLowerCase().trim();
-          const coords = COUNTRY_COORDS[key];
-          if (coords) {
-            const d = haversineKm(
-              ADMIN_REF_LOCATION.lat,
-              ADMIN_REF_LOCATION.lng,
-              coords.lat,
-              coords.lng
-            );
-            return d.toFixed(1) + " km";
-          }
-        }
+      const PAGE_SIZE = 90;
 
-        // fallback
-        return "-";
-      }
+      const pagination = {
+        lastDoc: null,
+        firstDoc: null,
+        hasNext: false,
+        hasPrev: false,
+        stack: []
+      };
 
-      // --- Auth gate for admin ---
-      const ADMIN_EMAILS = ["iiiisevenxxx@gmail.com"];
+      const currentFilter = {
+        start: null,
+        end: null
+      };
 
+      // --- DOM refs ---
       const adminStatusEl = document.getElementById("adminStatus");
-      const postsSectionEl = document.getElementById("postsSection");
-
-      firebase.auth().onAuthStateChanged((user) => {
-        if (!user) {
-          adminStatusEl.textContent = "Not logged in. Redirecting...";
-          postsSectionEl.style.display = "none";
-          setTimeout(() => {
-            window.location.href = "index.html";
-          }, 1000);
-          return;
-        }
-
-        const isAdmin = ADMIN_EMAILS.includes(user.email);
-        if (!isAdmin) {
-          adminStatusEl.textContent =
-            "Access denied. This account is not an admin.";
-          postsSectionEl.style.display = "none";
-          return;
-        }
-
-        adminStatusEl.textContent =
-          "Logged in as " + user.email + " (admin access)";
-        postsSectionEl.style.display = "block";
-        initAdminPosts();
-      });
-
-      // --- Pagination + filters state ---
-      let lastVisible = null;
-      let firstVisible = null;
-      let isFirstPage = true;
-      const pageSize = 50;
+      const postsSection = document.getElementById("postsSection");
+      const postsTableWrapper = document.getElementById("postsTableWrapper");
 
       const prevPageBtn = document.getElementById("prevPageBtn");
       const nextPageBtn = document.getElementById("nextPageBtn");
-
-      const startDateInput = document.getElementById("filterStartDate");
-      const endDateInput = document.getElementById("filterEndDate");
+      const filterStartInput = document.getElementById("filterStartDate");
+      const filterEndInput = document.getElementById("filterEndDate");
       const applyDateFilterBtn = document.getElementById("applyDateFilterBtn");
       const clearDateFilterBtn = document.getElementById("clearDateFilterBtn");
+      const importRandomNewsBtn = document.getElementById("importRandomNewsBtn");
 
-      function getDateFilters() {
-        const startVal = startDateInput.value;
-        const endVal = endDateInput.value;
+      // --- Helpers ---
+      const resetPagination = () => {
+        pagination.lastDoc = null;
+        pagination.firstDoc = null;
+        pagination.hasNext = false;
+        pagination.hasPrev = false;
+        pagination.stack = [];
+      };
 
-        let startTimestamp = null;
-        let endTimestamp = null;
+      const updatePaginationButtons = () => {
+        if (!prevPageBtn || !nextPageBtn) return;
+        prevPageBtn.disabled = !pagination.hasPrev;
+        nextPageBtn.disabled = !pagination.hasNext;
+      };
 
-        if (startVal) {
-          startTimestamp = firebase.firestore.Timestamp.fromDate(
-            new Date(startVal + "T00:00:00")
-          );
-        }
-        if (endVal) {
-          endTimestamp = firebase.firestore.Timestamp.fromDate(
-            new Date(endVal + "T23:59:59")
-          );
-        }
+      const buildBaseQuery = () => {
+        let q = db.collection("posts").orderBy("createdAt", "desc");
 
-        return { startTimestamp, endTimestamp };
-      }
-
-      function buildBaseQuery() {
-        let query = db
-          .collection("posts")
-          .orderBy("createdAt", "desc")
-          .limit(pageSize);
-
-        const { startTimestamp, endTimestamp } = getDateFilters();
-
-        if (startTimestamp) {
-          query = query.where("createdAt", ">=", startTimestamp);
-        }
-        if (endTimestamp) {
-          query = query.where("createdAt", "<=", endTimestamp);
+        if (currentFilter.start && currentFilter.end) {
+          q = q
+            .where("createdAt", ">=", currentFilter.start)
+            .where("createdAt", "<=", currentFilter.end);
+        } else if (currentFilter.start) {
+          q = q.where("createdAt", ">=", currentFilter.start);
+        } else if (currentFilter.end) {
+          q = q.where("createdAt", "<=", currentFilter.end);
         }
 
-        return query;
-      }
+        return q;
+      };
 
-      function fetchFirstPage() {
-        isFirstPage = true;
-        prevPageBtn.disabled = true;
+      const formatEventDate = (data) => {
+        let eventDate = null;
 
-        buildBaseQuery()
-          .get()
-          .then((snapshot) => {
-            if (snapshot.empty) {
-              lastVisible = null;
-              firstVisible = null;
-              nextPageBtn.disabled = true;
-              renderPostsTable([]);
-              return;
-            }
+        if (data.publishedAt && data.publishedAt.toDate) {
+          eventDate = data.publishedAt.toDate();
+        } else if (data.createdAt && data.createdAt.toDate) {
+          eventDate = data.createdAt.toDate();
+        }
 
-            firstVisible = snapshot.docs[0];
-            lastVisible = snapshot.docs[snapshot.docs.length - 1];
-            nextPageBtn.disabled = snapshot.size < pageSize;
-            renderPostsTable(snapshot.docs);
-          })
-          .catch((err) => {
-            console.error("Error fetching first page:", err);
-            alert("Error loading posts.");
-          });
-      }
+        if (!eventDate) return "-";
 
-      function fetchNextPage() {
-        if (!lastVisible) return;
+        const dayName = eventDate.toLocaleDateString("en-IN", {
+          weekday: "short"
+        });
+        const datePart = eventDate.toLocaleDateString("en-IN");
+        const timePart = eventDate.toLocaleTimeString("en-IN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false
+        });
 
-        isFirstPage = false;
-        prevPageBtn.disabled = false;
+        return `${dayName}, ${datePart} ${timePart}`;
+      };
 
-        buildBaseQuery()
-          .startAfter(lastVisible)
-          .get()
-          .then((snapshot) => {
-            if (snapshot.empty) {
-              nextPageBtn.disabled = true;
-              return;
-            }
-
-            firstVisible = snapshot.docs[0];
-            lastVisible = snapshot.docs[snapshot.docs.length - 1];
-            nextPageBtn.disabled = snapshot.size < pageSize;
-            renderPostsTable(snapshot.docs);
-          })
-          .catch((err) => {
-            console.error("Error fetching next page:", err);
-            alert("Error loading next posts.");
-          });
-      }
-
-      function fetchPrevPage() {
-        if (!firstVisible) return;
-
-        buildBaseQuery()
-          .endBefore(firstVisible)
-          .get()
-          .then((snapshot) => {
-            if (snapshot.empty) {
-              prevPageBtn.disabled = true;
-              isFirstPage = true;
-              return;
-            }
-
-            firstVisible = snapshot.docs[0];
-            lastVisible = snapshot.docs[snapshot.docs.length - 1];
-            prevPageBtn.disabled = snapshot.size < pageSize || isFirstPage;
-            nextPageBtn.disabled = false;
-            renderPostsTable(snapshot.docs);
-          })
-          .catch((err) => {
-            console.error("Error fetching previous page:", err);
-            alert("Error loading previous posts.");
-          });
-      }
-
-      prevPageBtn.addEventListener("click", fetchPrevPage);
-      nextPageBtn.addEventListener("click", fetchNextPage);
-
-      applyDateFilterBtn.addEventListener("click", () => {
-        fetchFirstPage();
-      });
-
-      clearDateFilterBtn.addEventListener("click", () => {
-        startDateInput.value = "";
-        endDateInput.value = "";
-        fetchFirstPage();
-      });
-
-      function initAdminPosts() {
-        fetchFirstPage();
-      }
-
-      // --- Render table ---
-      const postsTableWrapper = document.getElementById("postsTableWrapper");
-
-      function formatTimestamp(ts) {
-        if (!ts || !ts.toDate) return "-";
-        const d = ts.toDate();
-        const day = d.getDate().toString().padStart(2, "0");
-        const month = (d.getMonth() + 1).toString().padStart(2, "0");
-        const year = d.getFullYear();
-        const hours = d.getHours().toString().padStart(2, "0");
-        const mins = d.getMinutes().toString().padStart(2, "0");
-        const secs = d.getSeconds().toString().padStart(2, "0");
-        const weekday = d.toLocaleDateString(undefined, { weekday: "short" });
-        return `${weekday}, ${day}/${month}/${year} ${hours}:${mins}:${secs}`;
-      }
-
-      function renderPostsTable(docs) {
-        if (!docs || docs.length === 0) {
-          postsTableWrapper.innerHTML =
-            '<p class="muted">No posts found for this filter/page.</p>';
+      const renderPostsTable = (docs) => {
+        if (!docs.length) {
+          postsTableWrapper.innerHTML = "<p>No posts found.</p>";
           return;
         }
 
-        let html = `
-          <div class="table-responsive">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th style="min-width: 220px;">Title</th>
-                  <th style="min-width: 260px;">Content</th>
-                  <th>Author</th>
-                  <th>Location</th>
-                  <th>Distance</th>
-                  <th>Created</th>
-                  <th>Source</th>
-                  <th>External?</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-        `;
+        let rowsHtml = "";
 
         docs.forEach((doc) => {
           const data = doc.data();
-          const title = (data.title || "").toString().slice(0, 100);
-          const content = (data.content || "").toString().slice(0, 140);
-          const author = data.author || data.userEmail || "-";
 
-          let locationText = "-";
-          if (data.location) {
-            if (typeof data.location === "string") {
-              locationText = data.location;
-            } else if (
-              typeof data.location === "object" &&
-              data.location.name
-            ) {
-              locationText = data.location.name;
-            } else if (
-              data.location.lat != null &&
-              data.location.lng != null
-            ) {
-              locationText = `${data.location.lat.toFixed(
-                3
-              )}, ${data.location.lng.toFixed(3)}`;
-            }
-          }
+          const createdAt = formatEventDate(data);
+          const locationText = data.address || "Unknown";
+          const sourceText =
+            data.sourceName || data.sourceUrl || (data.external ? "External" : "User");
+          const isExternalBadge = data.external
+            ? '<span class="badge-pill">External</span>'
+            : '<span class="badge-pill danger-badge">Local</span>';
 
-          const distanceText = getDistanceForDoc(data);
+          const distanceKm = computeDistanceKm(data.location);
+          const distanceText =
+            distanceKm != null ? distanceKm.toFixed(1) + " km" : "-";
 
-          const createdAt = formatTimestamp(data.createdAt);
-          const source = data.sourceName || data.source || "-";
-          const isExternal = data.isExternal ? "External" : "Local";
-
-          html += `
+          rowsHtml += `
             <tr>
-              <td>${title}</td>
-              <td>${content}</td>
-              <td>${author}</td>
+              <td>${data.title || ""}</td>
+              <td>${(data.content || "").slice(0, 120)}...</td>
+              <td>${data.userId || ""}</td>
               <td>${locationText}</td>
               <td>${distanceText}</td>
               <td>${createdAt}</td>
-              <td>${source}</td>
-              <td>${isExternal}</td>
+              <td>${sourceText}</td>
+              <td>${isExternalBadge}</td>
               <td>
-                <button
-                  class="small-btn danger"
-                  onclick="deletePost('${doc.id}')">
+                <button class="small-btn" onclick="deletePost('${doc.id}')">
                   Delete
                 </button>
               </td>
@@ -463,65 +269,373 @@
           `;
         });
 
-        html += `
-              </tbody>
-            </table>
-          </div>
+        postsTableWrapper.innerHTML = `
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Content</th>
+                <th>Author</th>
+                <th>Location</th>
+                <th>Distance</th>
+                <th>Created</th>
+                <th>Source</th>
+                <th>External?</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
         `;
+      };
 
-        postsTableWrapper.innerHTML = html;
+      // --- Firestore operations ---
+      async function loadPostsForAdmin() {
+        postsTableWrapper.innerHTML = "<p>Loading posts...</p>";
+
+        try {
+          const snap = await buildBaseQuery().limit(PAGE_SIZE).get();
+          const docs = snap.docs;
+
+          renderPostsTable(docs);
+
+          if (docs.length) {
+            pagination.firstDoc = docs[0];
+            pagination.lastDoc = docs[docs.length - 1];
+            pagination.hasNext = docs.length === PAGE_SIZE;
+            pagination.hasPrev = pagination.stack.length > 0;
+          } else {
+            pagination.firstDoc = null;
+            pagination.lastDoc = null;
+            pagination.hasNext = false;
+            pagination.hasPrev = pagination.stack.length > 0;
+          }
+
+          updatePaginationButtons();
+        } catch (e) {
+          console.error("Admin posts load error:", e);
+          postsTableWrapper.innerHTML =
+            "<p>Error loading posts for admin.</p>";
+        }
       }
 
-      // --- Delete post ---
-      function deletePost(id) {
-        if (!confirm("Are you sure you want to delete this post?")) return;
-        db.collection("posts")
-          .doc(id)
-          .delete()
-          .then(() => {
-            fetchFirstPage();
-          })
-          .catch((err) => {
-            console.error("Error deleting post:", err);
-            alert("Failed to delete post.");
-          });
+      async function loadNextPage() {
+        if (!pagination.lastDoc) return;
+
+        postsTableWrapper.innerHTML = "<p>Loading next page...</p>";
+
+        try {
+          if (pagination.firstDoc) {
+            pagination.stack.push(pagination.firstDoc);
+          }
+
+          const snap = await buildBaseQuery()
+            .startAfter(pagination.lastDoc)
+            .limit(PAGE_SIZE)
+            .get();
+
+          const docs = snap.docs;
+          renderPostsTable(docs);
+
+          if (docs.length) {
+            pagination.firstDoc = docs[0];
+            pagination.lastDoc = docs[docs.length - 1];
+            pagination.hasNext = docs.length === PAGE_SIZE;
+            pagination.hasPrev = pagination.stack.length > 0;
+          } else {
+            pagination.hasNext = false;
+          }
+
+          updatePaginationButtons();
+        } catch (e) {
+          console.error("Next page error:", e);
+          postsTableWrapper.innerHTML =
+            "<p>Error loading next page.</p>";
+        }
       }
+
+      async function loadPrevPage() {
+        if (!pagination.stack.length) return;
+
+        postsTableWrapper.innerHTML = "<p>Loading previous page...</p>";
+
+        try {
+          const prevCursor = pagination.stack.pop();
+
+          const snap = await buildBaseQuery()
+            .startAt(prevCursor)
+            .limit(PAGE_SIZE)
+            .get();
+
+          const docs = snap.docs;
+          renderPostsTable(docs);
+
+          if (docs.length) {
+            pagination.firstDoc = docs[0];
+            pagination.lastDoc = docs[docs.length - 1];
+            pagination.hasPrev = pagination.stack.length > 0;
+            pagination.hasNext = true;
+          } else {
+            pagination.hasPrev = pagination.stack.length > 0;
+          }
+
+          updatePaginationButtons();
+        } catch (e) {
+          console.error("Prev page error:", e);
+          postsTableWrapper.innerHTML =
+            "<p>Error loading previous page.</p>";
+        }
+      }
+
+      async function deletePost(postId) {
+        if (!confirm("Delete this post?")) return;
+        try {
+          await db.collection("posts").doc(postId).delete();
+          loadPostsForAdmin();
+        } catch (e) {
+          console.error("Delete post error:", e);
+          alert("Error deleting post.");
+        }
+      }
+
       window.deletePost = deletePost;
 
-      // --- Import random news (60 from NewsData.io) ---
-      const importRandomNewsBtn = document.getElementById(
-        "importRandomNewsBtn"
-      );
-
-      importRandomNewsBtn.addEventListener("click", async () => {
-        if (
-          !confirm(
-            "Import 60 latest external news into Firestore?\nThese will be marked as system-news."
-          )
-        ) {
+      async function checkAdminAndLoad(user) {
+        if (!user) {
+          adminStatusEl.textContent =
+            "You must be logged in to access admin panel.";
+          postsSection.style.display = "none";
+          isAdmin = false;
           return;
         }
 
-        importRandomNewsBtn.disabled = true;
-        importRandomNewsBtn.textContent = "Importing...";
+        try {
+          const docSnap = await db.collection("users").doc(user.uid).get();
+          const data = docSnap.exists ? docSnap.data() : null;
+
+          const hasAdminRole =
+            data &&
+            (data.role === "admin" ||
+              data.isAdmin === true ||
+              data.is_admin === true);
+
+          if (!hasAdminRole) {
+            isAdmin = false;
+            adminStatusEl.textContent =
+              "You are not an admin. Access denied.";
+            postsSection.style.display = "none";
+            return;
+          }
+
+          isAdmin = true;
+          adminStatusEl.textContent =
+            "Logged in as " + (user.email || "unknown") + " (admin access)";
+          postsSection.style.display = "block";
+
+          resetPagination();
+          loadPostsForAdmin();
+        } catch (e) {
+          console.error("Admin check error:", e);
+          adminStatusEl.textContent =
+            "Error checking admin access. See console.";
+          postsSection.style.display = "none";
+          isAdmin = false;
+        }
+      }
+
+      firebase.auth().onAuthStateChanged((user) => {
+        currentUser = user;
+        checkAdminAndLoad(user);
+      });
+
+      // --- NewsData import ---
+      const NEWSDATA_API_KEY = "pub_6b1a67037a52456cb5fe42751cbbbed7";
+
+      const buildHumanLocation = (article) => {
+        const district = article.city || article.region || article.district || "";
+        const state = article.state || "";
+        const country = article.country || "";
+
+        const parts = [];
+        if (district) parts.push(district);
+        if (state) parts.push(state);
+        if (country) parts.push(country);
+
+        return parts.length ? parts.join(", ") : "World News";
+      };
+
+      async function import60RandomNews() {
+        if (!NEWSDATA_API_KEY) {
+          alert("NewsData.io API key not set");
+          return;
+        }
+
+        if (importRandomNewsBtn) {
+          importRandomNewsBtn.disabled = true;
+          importRandomNewsBtn.textContent = "Importing 60 news...";
+        }
 
         try {
-          // NOTE: Replace with your Cloud Function / backend endpoint that
-          // actually calls NewsData.io and writes documents to `posts`.
-          const res = await fetch(
-            "https://us-central1-nearby-news-alert-system.cloudfunctions.net/importNewsDataIo",
-            {
-              method: "POST",
+          const totalNeeded = 60;
+          const allArticles = [];
+          const seenIds = new Set();
+          let nextPage = null;
+
+          while (allArticles.length < totalNeeded) {
+            const params = {
+              apikey: NEWSDATA_API_KEY,
+              language: "en"
+            };
+
+            if (nextPage) params.page = nextPage;
+
+            const url =
+              "https://newsdata.io/api/1/latest?" +
+              new URLSearchParams(params).toString();
+
+            const res = await fetch(url);
+            if (!res.ok) {
+              throw new Error("NewsData.io error " + res.status);
             }
-          );
-          if (!res.ok) throw new Error("Failed to call import function");
-          alert("Import request sent. Refresh after 10–20 seconds.");
-        } catch (err) {
-          console.error("Import error:", err);
-          alert("Error triggering import.");
+
+            const data = await res.json();
+            const results = Array.isArray(data.results) ? data.results : [];
+
+            for (const a of results) {
+              const id = a.article_id || a.link;
+              if (!id || seenIds.has(id)) continue;
+              seenIds.add(id);
+              allArticles.push(a);
+              if (allArticles.length >= totalNeeded) break;
+            }
+
+            if (!data.nextPage || allArticles.length >= totalNeeded) break;
+            nextPage = data.nextPage;
+          }
+
+          const articles = allArticles.slice(0, totalNeeded);
+          if (!articles.length) {
+            alert("No articles returned from NewsData.io");
+            return;
+          }
+
+          const batch = db.batch();
+          const now = firebase.firestore.FieldValue.serverTimestamp();
+
+          articles.forEach((article) => {
+            const ref = db.collection("posts").doc();
+
+            const title = article.title || "External news";
+            const description =
+              article.description ||
+              article.content ||
+              article.summary ||
+              "";
+            const content = description.slice(0, 900);
+
+            let published = now;
+            if (article.pubDate) {
+              const d = new Date(article.pubDate);
+              if (!isNaN(d.getTime())) {
+                published = d;
+              }
+            }
+
+            const humanLocation = buildHumanLocation(article);
+
+            batch.set(ref, {
+              title,
+              content,
+              sourceUrl: article.link || "",
+              sourceName: article.source_name || article.source_id || "",
+              createdAt: now,
+              publishedAt: published,
+              userId: "system-news",
+              location: {
+                latitude: article.latitude || 0,
+                longitude: article.longitude || 0
+              },
+              address: humanLocation,
+              external: true,
+              imageUrl: article.image_url || "",
+              categories: article.category || [],
+              sentiment: article.sentiment || ""
+            });
+          });
+
+          await batch.commit();
+          alert("Imported " + articles.length + " news items.");
+          resetPagination();
+          loadPostsForAdmin();
+        } catch (e) {
+          console.error("Import 60 news error:", e);
+          alert(e.message || "Error importing news.");
         } finally {
-          importRandomNewsBtn.disabled = false;
-          importRandomNewsBtn.textContent = "Import 60 random news";
+          if (importRandomNewsBtn) {
+            importRandomNewsBtn.disabled = false;
+            importRandomNewsBtn.textContent = "Import 60 random news";
+          }
+        }
+      }
+
+      // --- Event listeners ---
+      document.addEventListener("DOMContentLoaded", () => {
+        if (importRandomNewsBtn) {
+          importRandomNewsBtn.addEventListener("click", () => {
+            if (!isAdmin) {
+              alert("Only admin can import external news.");
+              return;
+            }
+            import60RandomNews();
+          });
+        }
+
+        if (nextPageBtn) {
+          nextPageBtn.addEventListener("click", () => {
+            if (!isAdmin) return;
+            loadNextPage();
+          });
+        }
+
+        if (prevPageBtn) {
+          prevPageBtn.addEventListener("click", () => {
+            if (!isAdmin) return;
+            loadPrevPage();
+          });
+        }
+
+        if (applyDateFilterBtn) {
+          applyDateFilterBtn.addEventListener("click", () => {
+            const startVal = filterStartInput.value;
+            const endVal = filterEndInput.value;
+
+            currentFilter.start = startVal
+              ? firebase.firestore.Timestamp.fromDate(
+                  new Date(startVal + "T00:00:00")
+                )
+              : null;
+
+            currentFilter.end = endVal
+              ? firebase.firestore.Timestamp.fromDate(
+                  new Date(endVal + "T23:59:59")
+                )
+              : null;
+
+            resetPagination();
+            loadPostsForAdmin();
+          });
+        }
+
+        if (clearDateFilterBtn) {
+          clearDateFilterBtn.addEventListener("click", () => {
+            filterStartInput.value = "";
+            filterEndInput.value = "";
+            currentFilter.start = null;
+            currentFilter.end = null;
+
+            resetPagination();
+            loadPostsForAdmin();
+          });
         }
       });
     </script>
