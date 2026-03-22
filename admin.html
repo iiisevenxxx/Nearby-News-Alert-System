@@ -203,9 +203,29 @@
         `;
         docs.forEach((doc) => {
           const data = doc.data();
-          const createdAt = data.createdAt
-            ? data.createdAt.toDate().toLocaleString()
-            : "-";
+
+          // Exact event time from publishedAt (fallback createdAt)
+          let eventDate = null;
+          if (data.publishedAt && data.publishedAt.toDate) {
+            eventDate = data.publishedAt.toDate();
+          } else if (data.createdAt && data.createdAt.toDate) {
+            eventDate = data.createdAt.toDate();
+          }
+
+          let createdAt = "-";
+          if (eventDate) {
+            const dayName = eventDate.toLocaleDateString("en-IN", {
+              weekday: "short"
+            }); // Sun
+            const datePart = eventDate.toLocaleDateString("en-IN"); // 22/03/2026
+            const timePart = eventDate.toLocaleTimeString("en-IN", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: false
+            }); // 14:08:08
+            createdAt = `${dayName}, ${datePart} ${timePart}`;
+          }
 
           const locationText = data.address || "Unknown";
 
@@ -492,15 +512,17 @@
               }
             }
 
-            // State, Country format
-            let humanLocation = "World News";
-            if (article.state && article.country) {
-              humanLocation = article.state + ", " + article.country;
-            } else if (article.country) {
-              humanLocation = article.country;
-            } else if (article.state) {
-              humanLocation = article.state;
-            }
+            // District + State + Country format (best-effort)
+            let district = article.city || article.region || article.district || "";
+            let state = article.state || "";
+            let country = article.country || "";
+
+            let parts = [];
+            if (district) parts.push(district);
+            if (state) parts.push(state);
+            if (country) parts.push(country);
+
+            let humanLocation = parts.length ? parts.join(", ") : "World News";
 
             batch.set(ref, {
               title,
@@ -595,7 +617,6 @@
               hasPrev: false,
               stack: []
             };
-
             loadPostsForAdmin();
           });
         }
@@ -614,7 +635,6 @@
               hasPrev: false,
               stack: []
             };
-
             loadPostsForAdmin();
           });
         }
