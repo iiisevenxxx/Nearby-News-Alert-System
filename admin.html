@@ -116,10 +116,13 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <script>
+      // same project jise abhi use kar rahe ho
       var firebaseConfig = {
         apiKey: "AIzaSyAidKMs67_gh4xNLQXiNyDwE4AbhrbvZ7M",
         authDomain: "nearby-news-alert-system.firebaseapp.com",
         projectId: "nearby-news-alert-system"
+        // agar index.html me aur fields (storageBucket, appId, etc.) hon
+        // to unko bhi yaha add kar sakta hai
       };
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
@@ -201,7 +204,6 @@
             </thead>
             <tbody>
         `;
-
         docs.forEach((doc) => {
           const data = doc.data();
           const createdAt = data.createdAt
@@ -386,7 +388,6 @@
             " (admin access)";
           postsSection.style.display = "block";
 
-          // reset pagination on fresh login
           pagination = {
             lastDoc: null,
             firstDoc: null,
@@ -409,6 +410,7 @@
         checkAdminAndLoad(user);
       });
 
+      // NewsData.io API key – same as before
       const NEWSDATA_API_KEY =
         "pub_6b1a67037a52456cb5fe42751cbbbed7";
 
@@ -434,6 +436,7 @@
             const params = {
               apikey: NEWSDATA_API_KEY,
               language: "en"
+              // yaha pe country / q / category add kar sakta hai agar chaahe
               // country: "in",
               // q: "india",
               // category: "top,world"
@@ -452,7 +455,7 @@
               const msg = "NewsData.io error " + res.status;
               throw new Error(msg);
             }
-            const data = await res.json(); // uses latest endpoint with nextPage [web:369][web:399]
+            const data = await res.json();
 
             const results = Array.isArray(data.results)
               ? data.results
@@ -497,6 +500,16 @@
               }
             }
 
+            // location build from NewsData fields
+            const parts = [];
+            if (article.city) parts.push(article.city);
+            if (article.state) parts.push(article.state);
+            if (article.country) parts.push(article.country);
+            if (article.region) parts.push(article.region);
+
+            const humanLocation =
+              parts.length > 0 ? parts.join(", ") : "World News";
+
             batch.set(ref, {
               title,
               content,
@@ -506,10 +519,10 @@
               publishedAt: published,
               userId: "system-news",
               location: {
-                latitude: 0,
-                longitude: 0
+                latitude: article.latitude || 0,
+                longitude: article.longitude || 0
               },
-              address: "World News",
+              address: humanLocation,
               external: true,
               imageUrl: article.image_url || "",
               categories: article.category || [],
@@ -519,7 +532,6 @@
 
           await batch.commit();
           alert("Imported " + articles.length + " news items.");
-          // refresh first page with current filter
           pagination = {
             lastDoc: null,
             firstDoc: null,
