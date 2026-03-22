@@ -110,20 +110,62 @@
 
       const toRad = (value) => (value * Math.PI) / 180;
 
-      const computeDistanceKm = (loc) => {
+      // Country approx centers for fallback distance
+      const COUNTRY_COORDS = {
+        india: { latitude: 20.5937, longitude: 78.9629 },
+        canada: { latitude: 56.1304, longitude: -106.3468 },
+        "united states of america": { latitude: 39.8283, longitude: -98.5795 },
+        usa: { latitude: 39.8283, longitude: -98.5795 },
+        japan: { latitude: 36.2048, longitude: 138.2529 },
+        china: { latitude: 35.8617, longitude: 104.1954 },
+        "united kingdom": { latitude: 55.3781, longitude: -3.436 },
+        uk: { latitude: 55.3781, longitude: -3.436 },
+        australia: { latitude: -25.2744, longitude: 133.7751 },
+        nigeria: { latitude: 9.082, longitude: 8.6753 },
+        ghana: { latitude: 7.9465, longitude: -1.0232 },
+        "south africa": { latitude: -30.5595, longitude: 22.9375 },
+        russia: { latitude: 61.524, longitude: 105.3188 },
+        jamaica: { latitude: 18.1096, longitude: -77.2975 },
+        "dominican republic": { latitude: 18.7357, longitude: -70.1627 },
+        kenya: { latitude: -0.0236, longitude: 37.9062 }
+      };
+
+      // UPDATED: distance calculator that also uses country/address if lat/lng missing
+      const computeDistanceKm = (loc, data) => {
+        let latitude = null;
+        let longitude = null;
+
+        // 1) Proper lat/lng from Firestore (user nearby posts)
         if (
-          !loc ||
-          typeof loc.latitude !== "number" ||
-          typeof loc.longitude !== "number" ||
-          (loc.latitude === 0 && loc.longitude === 0)
+          loc &&
+          typeof loc.latitude === "number" &&
+          typeof loc.longitude === "number" &&
+          !(loc.latitude === 0 && loc.longitude === 0)
         ) {
+          latitude = loc.latitude;
+          longitude = loc.longitude;
+        } else {
+          // 2) Fallback: use country/address/location string (external system-news)
+          const rawLocation =
+            (data && (data.country || data.address || data.location)) || "";
+          if (typeof rawLocation === "string") {
+            const key = rawLocation.toLowerCase().trim();
+            const coords = COUNTRY_COORDS[key];
+            if (coords) {
+              latitude = coords.latitude;
+              longitude = coords.longitude;
+            }
+          }
+        }
+
+        if (latitude == null || longitude == null) {
           return null;
         }
 
         const lat1 = ADMIN_REF_LOCATION.lat;
         const lon1 = ADMIN_REF_LOCATION.lng;
-        const lat2 = loc.latitude;
-        const lon2 = loc.longitude;
+        const lat2 = latitude;
+        const lon2 = longitude;
 
         const dLat = toRad(lat2 - lat1);
         const dLon = toRad(lon2 - lon1);
@@ -246,7 +288,8 @@
             ? '<span class="badge-pill">External</span>'
             : '<span class="badge-pill danger-badge">Local</span>';
 
-          const distanceKm = computeDistanceKm(data.location);
+          // UPDATED: pass complete data so fallback country/address work
+          const distanceKm = computeDistanceKm(data.location, data);
           const distanceText =
             distanceKm != null ? distanceKm.toFixed(1) + " km" : "-";
 
@@ -556,6 +599,7 @@
                 longitude: article.longitude || 0
               },
               address: humanLocation,
+              country: (article.country || "").toLowerCase(),
               external: true,
               imageUrl: article.image_url || "",
               categories: article.category || [],
