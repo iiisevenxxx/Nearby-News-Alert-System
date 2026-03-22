@@ -2,10 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Nearby News - Admin Panel</title>
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -18,12 +15,9 @@
               Nearby News Admin
               <span class="admin-badge">Internal tools</span>
             </h2>
-            <p id="adminStatus" class="muted">
-              Checking admin access...
-            </p>
+            <p id="adminStatus" class="muted">Checking admin access...</p>
             <p class="admin-warning">
-              Warning: This panel is only for trusted admins. Changes here
-              are live and affect all users.
+              Warning: This panel is only for trusted admins. Changes here are live and affect all users.
             </p>
           </div>
           <div class="top-row-right">
@@ -52,22 +46,10 @@
                 gap: 6px;
               "
             >
-              <input
-                type="date"
-                id="filterStartDate"
-                class="readonly-input"
-              />
-              <input
-                type="date"
-                id="filterEndDate"
-                class="readonly-input"
-              />
-              <button class="small-btn" id="applyDateFilterBtn">
-                Apply
-              </button>
-              <button class="small-btn" id="clearDateFilterBtn">
-                Clear
-              </button>
+              <input type="date" id="filterStartDate" class="readonly-input" />
+              <input type="date" id="filterEndDate" class="readonly-input" />
+              <button class="small-btn" id="applyDateFilterBtn">Apply</button>
+              <button class="small-btn" id="clearDateFilterBtn">Clear</button>
             </div>
           </div>
         </div>
@@ -79,12 +61,8 @@
             <span class="badge-pill">Live Firestore data</span>
           </div>
           <div class="info-item">
-            <button class="small-btn" id="prevPageBtn" disabled>
-              Prev
-            </button>
-            <button class="small-btn" id="nextPageBtn" disabled>
-              Next
-            </button>
+            <button class="small-btn" id="prevPageBtn" disabled>Prev</button>
+            <button class="small-btn" id="nextPageBtn" disabled>Next</button>
           </div>
         </div>
 
@@ -97,13 +75,11 @@
         </button>
 
         <p class="muted">
-          Imports 60 latest headlines from NewsData.io (12h delayed feed,
-          external links only).
+          Imports 60 latest headlines from NewsData.io (12h delayed feed, external links only).
         </p>
 
         <p class="muted">
-          Latest posts across the platform (including external news). You can
-          review and delete content here.
+          Latest posts across the platform (including external news). You can review and delete content here.
         </p>
 
         <div id="postsTableWrapper" style="margin-top: 10px;"></div>
@@ -116,26 +92,22 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <script>
-      var firebaseConfig = {
+      // --- Firebase init ---
+      const firebaseConfig = {
         apiKey: "AIzaSyAidKMs67_gh4xNLQXiNyDwE4AbhrbvZ7M",
         authDomain: "nearby-news-alert-system.firebaseapp.com",
         projectId: "nearby-news-alert-system"
       };
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
-    </script>
 
-    <script>
+      // --- State ---
       let currentUser = null;
       let isAdmin = false;
 
-      const adminStatusEl = document.getElementById("adminStatus");
-      const postsSection = document.getElementById("postsSection");
-      const postsTableWrapper = document.getElementById("postsTableWrapper");
-
       const PAGE_SIZE = 90;
 
-      let pagination = {
+      const pagination = {
         lastDoc: null,
         firstDoc: null,
         hasNext: false,
@@ -143,27 +115,40 @@
         stack: []
       };
 
-      let currentFilter = {
+      const currentFilter = {
         start: null,
         end: null
       };
+
+      // --- DOM refs ---
+      const adminStatusEl = document.getElementById("adminStatus");
+      const postsSection = document.getElementById("postsSection");
+      const postsTableWrapper = document.getElementById("postsTableWrapper");
 
       const prevPageBtn = document.getElementById("prevPageBtn");
       const nextPageBtn = document.getElementById("nextPageBtn");
       const filterStartInput = document.getElementById("filterStartDate");
       const filterEndInput = document.getElementById("filterEndDate");
-      const applyDateFilterBtn =
-        document.getElementById("applyDateFilterBtn");
-      const clearDateFilterBtn =
-        document.getElementById("clearDateFilterBtn");
+      const applyDateFilterBtn = document.getElementById("applyDateFilterBtn");
+      const clearDateFilterBtn = document.getElementById("clearDateFilterBtn");
+      const importRandomNewsBtn = document.getElementById("importRandomNewsBtn");
 
-      function updatePaginationButtons() {
+      // --- Helpers ---
+      const resetPagination = () => {
+        pagination.lastDoc = null;
+        pagination.firstDoc = null;
+        pagination.hasNext = false;
+        pagination.hasPrev = false;
+        pagination.stack = [];
+      };
+
+      const updatePaginationButtons = () => {
         if (!prevPageBtn || !nextPageBtn) return;
         prevPageBtn.disabled = !pagination.hasPrev;
         nextPageBtn.disabled = !pagination.hasNext;
-      }
+      };
 
-      function buildBaseQuery() {
+      const buildBaseQuery = () => {
         let q = db.collection("posts").orderBy("createdAt", "desc");
 
         if (currentFilter.start && currentFilter.end) {
@@ -177,66 +162,53 @@
         }
 
         return q;
-      }
+      };
 
-      function renderPostsTable(docs) {
+      const formatEventDate = (data) => {
+        let eventDate = null;
+
+        if (data.publishedAt && data.publishedAt.toDate) {
+          eventDate = data.publishedAt.toDate();
+        } else if (data.createdAt && data.createdAt.toDate) {
+          eventDate = data.createdAt.toDate();
+        }
+
+        if (!eventDate) return "-";
+
+        const dayName = eventDate.toLocaleDateString("en-IN", {
+          weekday: "short"
+        });
+        const datePart = eventDate.toLocaleDateString("en-IN");
+        const timePart = eventDate.toLocaleTimeString("en-IN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false
+        });
+
+        return `${dayName}, ${datePart} ${timePart}`;
+      };
+
+      const renderPostsTable = (docs) => {
         if (!docs.length) {
           postsTableWrapper.innerHTML = "<p>No posts found.</p>";
           return;
         }
 
-        let html = `
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Content</th>
-                <th>Author</th>
-                <th>Location</th>
-                <th>Created</th>
-                <th>Source</th>
-                <th>External?</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-        `;
+        let rowsHtml = "";
+
         docs.forEach((doc) => {
           const data = doc.data();
 
-          // Exact event time from publishedAt (fallback createdAt)
-          let eventDate = null;
-          if (data.publishedAt && data.publishedAt.toDate) {
-            eventDate = data.publishedAt.toDate();
-          } else if (data.createdAt && data.createdAt.toDate) {
-            eventDate = data.createdAt.toDate();
-          }
-
-          let createdAt = "-";
-          if (eventDate) {
-            const dayName = eventDate.toLocaleDateString("en-IN", {
-              weekday: "short"
-            }); // Sun
-            const datePart = eventDate.toLocaleDateString("en-IN"); // 22/03/2026
-            const timePart = eventDate.toLocaleTimeString("en-IN", {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-              hour12: false
-            }); // 14:08:08
-            createdAt = `${dayName}, ${datePart} ${timePart}`;
-          }
-
+          const createdAt = formatEventDate(data);
           const locationText = data.address || "Unknown";
-
           const sourceText =
             data.sourceName || data.sourceUrl || (data.external ? "External" : "User");
-
           const isExternalBadge = data.external
             ? '<span class="badge-pill">External</span>'
             : '<span class="badge-pill danger-badge">Local</span>';
 
-          html += `
+          rowsHtml += `
             <tr>
               <td>${data.title || ""}</td>
               <td>${(data.content || "").slice(0, 120)}...</td>
@@ -254,30 +226,33 @@
           `;
         });
 
-        html += "</tbody></table>";
-        postsTableWrapper.innerHTML = html;
-      }
+        postsTableWrapper.innerHTML = `
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Content</th>
+                <th>Author</th>
+                <th>Location</th>
+                <th>Created</th>
+                <th>Source</th>
+                <th>External?</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        `;
+      };
 
-      async function deletePost(postId) {
-        if (!confirm("Delete this post?")) return;
-        try {
-          await db.collection("posts").doc(postId).delete();
-          loadPostsForAdmin();
-        } catch (e) {
-          console.error("Delete post error:", e);
-          alert("Error deleting post.");
-        }
-      }
-
+      // --- Firestore operations ---
       async function loadPostsForAdmin() {
         postsTableWrapper.innerHTML = "<p>Loading posts...</p>";
+
         try {
-          let q = buildBaseQuery().limit(PAGE_SIZE);
+          const snap = await buildBaseQuery().limit(PAGE_SIZE).get();
+          const docs = snap.docs;
 
-          const snap = await q.get();
-
-          const docs = [];
-          snap.forEach((doc) => docs.push(doc));
           renderPostsTable(docs);
 
           if (docs.length) {
@@ -310,13 +285,12 @@
             pagination.stack.push(pagination.firstDoc);
           }
 
-          let q = buildBaseQuery()
+          const snap = await buildBaseQuery()
             .startAfter(pagination.lastDoc)
-            .limit(PAGE_SIZE);
+            .limit(PAGE_SIZE)
+            .get();
 
-          const snap = await q.get();
-          const docs = [];
-          snap.forEach((doc) => docs.push(doc));
+          const docs = snap.docs;
           renderPostsTable(docs);
 
           if (docs.length) {
@@ -339,19 +313,17 @@
       async function loadPrevPage() {
         if (!pagination.stack.length) return;
 
-        postsTableWrapper.innerHTML =
-          "<p>Loading previous page...</p>";
+        postsTableWrapper.innerHTML = "<p>Loading previous page...</p>";
 
         try {
           const prevCursor = pagination.stack.pop();
 
-          let q = buildBaseQuery()
+          const snap = await buildBaseQuery()
             .startAt(prevCursor)
-            .limit(PAGE_SIZE);
+            .limit(PAGE_SIZE)
+            .get();
 
-          const snap = await q.get();
-          const docs = [];
-          snap.forEach((doc) => docs.push(doc));
+          const docs = snap.docs;
           renderPostsTable(docs);
 
           if (docs.length) {
@@ -370,6 +342,19 @@
             "<p>Error loading previous page.</p>";
         }
       }
+
+      async function deletePost(postId) {
+        if (!confirm("Delete this post?")) return;
+        try {
+          await db.collection("posts").doc(postId).delete();
+          loadPostsForAdmin();
+        } catch (e) {
+          console.error("Delete post error:", e);
+          alert("Error deleting post.");
+        }
+      }
+
+      window.deletePost = deletePost;
 
       async function checkAdminAndLoad(user) {
         if (!user) {
@@ -400,18 +385,10 @@
 
           isAdmin = true;
           adminStatusEl.textContent =
-            "Logged in as " +
-            (user.email || "unknown") +
-            " (admin access)";
+            "Logged in as " + (user.email || "unknown") + " (admin access)";
           postsSection.style.display = "block";
 
-          pagination = {
-            lastDoc: null,
-            firstDoc: null,
-            hasNext: false,
-            hasPrev: false,
-            stack: []
-          };
+          resetPagination();
           loadPostsForAdmin();
         } catch (e) {
           console.error("Admin check error:", e);
@@ -427,8 +404,21 @@
         checkAdminAndLoad(user);
       });
 
-      const NEWSDATA_API_KEY =
-        "pub_6b1a67037a52456cb5fe42751cbbbed7";
+      // --- NewsData import ---
+      const NEWSDATA_API_KEY = "pub_6b1a67037a52456cb5fe42751cbbbed7";
+
+      const buildHumanLocation = (article) => {
+        const district = article.city || article.region || article.district || "";
+        const state = article.state || "";
+        const country = article.country || "";
+
+        const parts = [];
+        if (district) parts.push(district);
+        if (state) parts.push(state);
+        if (country) parts.push(country);
+
+        return parts.length ? parts.join(", ") : "World News";
+      };
 
       async function import60RandomNews() {
         if (!NEWSDATA_API_KEY) {
@@ -436,10 +426,9 @@
           return;
         }
 
-        const btn = document.getElementById("importRandomNewsBtn");
-        if (btn) {
-          btn.disabled = true;
-          btn.textContent = "Importing 60 news...";
+        if (importRandomNewsBtn) {
+          importRandomNewsBtn.disabled = true;
+          importRandomNewsBtn.textContent = "Importing 60 news...";
         }
 
         try {
@@ -454,9 +443,7 @@
               language: "en"
             };
 
-            if (nextPage) {
-              params.page = nextPage;
-            }
+            if (nextPage) params.page = nextPage;
 
             const url =
               "https://newsdata.io/api/1/latest?" +
@@ -464,14 +451,12 @@
 
             const res = await fetch(url);
             if (!res.ok) {
-              const msg = "NewsData.io error " + res.status;
-              throw new Error(msg);
+              throw new Error("NewsData.io error " + res.status);
             }
-            const data = await res.json();
 
-            const results = Array.isArray(data.results)
-              ? data.results
-              : [];
+            const data = await res.json();
+            const results = Array.isArray(data.results) ? data.results : [];
+
             for (const a of results) {
               const id = a.article_id || a.link;
               if (!id || seenIds.has(id)) continue;
@@ -502,7 +487,7 @@
               article.content ||
               article.summary ||
               "";
-            const content = (description || "").slice(0, 900);
+            const content = description.slice(0, 900);
 
             let published = now;
             if (article.pubDate) {
@@ -512,17 +497,7 @@
               }
             }
 
-            // District + State + Country format (best-effort)
-            let district = article.city || article.region || article.district || "";
-            let state = article.state || "";
-            let country = article.country || "";
-
-            let parts = [];
-            if (district) parts.push(district);
-            if (state) parts.push(state);
-            if (country) parts.push(country);
-
-            let humanLocation = parts.length ? parts.join(", ") : "World News";
+            const humanLocation = buildHumanLocation(article);
 
             batch.set(ref, {
               title,
@@ -546,29 +521,21 @@
 
           await batch.commit();
           alert("Imported " + articles.length + " news items.");
-          pagination = {
-            lastDoc: null,
-            firstDoc: null,
-            hasNext: false,
-            hasPrev: false,
-            stack: []
-          };
+          resetPagination();
           loadPostsForAdmin();
         } catch (e) {
           console.error("Import 60 news error:", e);
           alert(e.message || "Error importing news.");
         } finally {
-          if (btn) {
-            btn.disabled = false;
-            btn.textContent = "Import 60 random news";
+          if (importRandomNewsBtn) {
+            importRandomNewsBtn.disabled = false;
+            importRandomNewsBtn.textContent = "Import 60 random news";
           }
         }
       }
 
+      // --- Event listeners ---
       document.addEventListener("DOMContentLoaded", () => {
-        const importRandomNewsBtn = document.getElementById(
-          "importRandomNewsBtn"
-        );
         if (importRandomNewsBtn) {
           importRandomNewsBtn.addEventListener("click", () => {
             if (!isAdmin) {
@@ -610,13 +577,7 @@
                 )
               : null;
 
-            pagination = {
-              lastDoc: null,
-              firstDoc: null,
-              hasNext: false,
-              hasPrev: false,
-              stack: []
-            };
+            resetPagination();
             loadPostsForAdmin();
           });
         }
@@ -628,13 +589,7 @@
             currentFilter.start = null;
             currentFilter.end = null;
 
-            pagination = {
-              lastDoc: null,
-              firstDoc: null,
-              hasNext: false,
-              hasPrev: false,
-              stack: []
-            };
+            resetPagination();
             loadPostsForAdmin();
           });
         }
