@@ -17,7 +17,8 @@
             </h2>
             <p id="adminStatus" class="muted">Checking admin access...</p>
             <p class="admin-warning">
-              Warning: This panel is only for trusted admins. Changes here are live and affect all users.
+              Warning: This panel is only for trusted admins. Changes here are
+              live and affect all users.
             </p>
           </div>
           <div class="top-row-right">
@@ -73,13 +74,13 @@
         >
           Import 60 random news
         </button>
-
         <p class="muted">
-          Imports 60 latest headlines from NewsData.io (12h delayed feed, external links only).
+          Imports 60 latest headlines from NewsData.io (12h delayed feed,
+          external links only).
         </p>
-
         <p class="muted">
-          Latest posts across the platform (including external news). You can review and delete content here.
+          Latest posts across the platform (including external news). You can
+          review and delete content here.
         </p>
 
         <div id="postsTableWrapper" style="margin-top: 10px;"></div>
@@ -96,7 +97,7 @@
       const firebaseConfig = {
         apiKey: "AIzaSyAidKMs67_gh4xNLQXiNyDwE4AbhrbvZ7M",
         authDomain: "nearby-news-alert-system.firebaseapp.com",
-        projectId: "nearby-news-alert-system"
+        projectId: "nearby-news-alert-system",
       };
       firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
@@ -104,10 +105,10 @@
       // --- Admin reference location for distance (Dahmi Kalan example) ---
       const ADMIN_REF_LOCATION = {
         lat: 26.911, // yahan apna exact latitude daalo
-        lng: 75.642  // yahan apna exact longitude daalo
+        lng: 75.642, // yahan apna exact longitude daalo
       };
-      const EARTH_RADIUS_KM = 6371;
 
+      const EARTH_RADIUS_KM = 6371;
       const toRad = (value) => (value * Math.PI) / 180;
 
       // Country approx centers for fallback distance
@@ -127,10 +128,10 @@
         russia: { latitude: 61.524, longitude: 105.3188 },
         jamaica: { latitude: 18.1096, longitude: -77.2975 },
         "dominican republic": { latitude: 18.7357, longitude: -70.1627 },
-        kenya: { latitude: -0.0236, longitude: 37.9062 }
+        kenya: { latitude: -0.0236, longitude: 37.9062 },
       };
 
-      // UPDATED: distance calculator that also uses country/address if lat/lng missing
+      // Distance calculator that also uses country/address if lat/lng missing
       const computeDistanceKm = (loc, data) => {
         let latitude = null;
         let longitude = null;
@@ -176,7 +177,6 @@
             Math.cos(toRad(lat2)) *
             Math.sin(dLon / 2) *
             Math.sin(dLon / 2);
-
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return EARTH_RADIUS_KM * c;
       };
@@ -186,25 +186,23 @@
       let isAdmin = false;
 
       const PAGE_SIZE = 90;
-
       const pagination = {
         lastDoc: null,
         firstDoc: null,
         hasNext: false,
         hasPrev: false,
-        stack: []
+        stack: [],
       };
 
       const currentFilter = {
         start: null,
-        end: null
+        end: null,
       };
 
       // --- DOM refs ---
       const adminStatusEl = document.getElementById("adminStatus");
       const postsSection = document.getElementById("postsSection");
       const postsTableWrapper = document.getElementById("postsTableWrapper");
-
       const prevPageBtn = document.getElementById("prevPageBtn");
       const nextPageBtn = document.getElementById("nextPageBtn");
       const filterStartInput = document.getElementById("filterStartDate");
@@ -240,7 +238,6 @@
         } else if (currentFilter.end) {
           q = q.where("createdAt", "<=", currentFilter.end);
         }
-
         return q;
       };
 
@@ -256,14 +253,14 @@
         if (!eventDate) return "-";
 
         const dayName = eventDate.toLocaleDateString("en-IN", {
-          weekday: "short"
+          weekday: "short",
         });
         const datePart = eventDate.toLocaleDateString("en-IN");
         const timePart = eventDate.toLocaleTimeString("en-IN", {
           hour: "2-digit",
           minute: "2-digit",
           second: "2-digit",
-          hour12: false
+          hour12: false,
         });
 
         return `${dayName}, ${datePart} ${timePart}`;
@@ -279,16 +276,16 @@
 
         docs.forEach((doc) => {
           const data = doc.data();
-
           const createdAt = formatEventDate(data);
           const locationText = data.address || "Unknown";
           const sourceText =
-            data.sourceName || data.sourceUrl || (data.external ? "External" : "User");
+            data.sourceName ||
+            data.sourceUrl ||
+            (data.external ? "External" : "User");
           const isExternalBadge = data.external
             ? '<span class="badge-pill">External</span>'
             : '<span class="badge-pill danger-badge">Local</span>';
 
-          // UPDATED: pass complete data so fallback country/address work
           const distanceKm = computeDistanceKm(data.location, data);
           const distanceText =
             distanceKm != null ? distanceKm.toFixed(1) + " km" : "-";
@@ -335,11 +332,9 @@
       // --- Firestore operations ---
       async function loadPostsForAdmin() {
         postsTableWrapper.innerHTML = "<p>Loading posts...</p>";
-
         try {
           const snap = await buildBaseQuery().limit(PAGE_SIZE).get();
           const docs = snap.docs;
-
           renderPostsTable(docs);
 
           if (docs.length) {
@@ -364,7 +359,6 @@
 
       async function loadNextPage() {
         if (!pagination.lastDoc) return;
-
         postsTableWrapper.innerHTML = "<p>Loading next page...</p>";
 
         try {
@@ -376,7 +370,6 @@
             .startAfter(pagination.lastDoc)
             .limit(PAGE_SIZE)
             .get();
-
           const docs = snap.docs;
           renderPostsTable(docs);
 
@@ -399,17 +392,14 @@
 
       async function loadPrevPage() {
         if (!pagination.stack.length) return;
-
         postsTableWrapper.innerHTML = "<p>Loading previous page...</p>";
 
         try {
           const prevCursor = pagination.stack.pop();
-
           const snap = await buildBaseQuery()
             .startAt(prevCursor)
             .limit(PAGE_SIZE)
             .get();
-
           const docs = snap.docs;
           renderPostsTable(docs);
 
@@ -440,7 +430,6 @@
           alert("Error deleting post.");
         }
       }
-
       window.deletePost = deletePost;
 
       async function checkAdminAndLoad(user) {
@@ -455,7 +444,6 @@
         try {
           const docSnap = await db.collection("users").doc(user.uid).get();
           const data = docSnap.exists ? docSnap.data() : null;
-
           const hasAdminRole =
             data &&
             (data.role === "admin" ||
@@ -472,9 +460,10 @@
 
           isAdmin = true;
           adminStatusEl.textContent =
-            "Logged in as " + (user.email || "unknown") + " (admin access)";
+            "Logged in as " +
+            (user.email || "unknown") +
+            " (admin access)";
           postsSection.style.display = "block";
-
           resetPagination();
           loadPostsForAdmin();
         } catch (e) {
@@ -495,15 +484,14 @@
       const NEWSDATA_API_KEY = "pub_6b1a67037a52456cb5fe42751cbbbed7";
 
       const buildHumanLocation = (article) => {
-        const district = article.city || article.region || article.district || "";
+        const district =
+          article.city || article.region || article.district || "";
         const state = article.state || "";
         const country = article.country || "";
-
         const parts = [];
         if (district) parts.push(district);
         if (state) parts.push(state);
         if (country) parts.push(country);
-
         return parts.length ? parts.join(", ") : "World News";
       };
 
@@ -527,9 +515,8 @@
           while (allArticles.length < totalNeeded) {
             const params = {
               apikey: NEWSDATA_API_KEY,
-              language: "en"
+              language: "en",
             };
-
             if (nextPage) params.page = nextPage;
 
             const url =
@@ -540,7 +527,6 @@
             if (!res.ok) {
               throw new Error("NewsData.io error " + res.status);
             }
-
             const data = await res.json();
             const results = Array.isArray(data.results) ? data.results : [];
 
@@ -567,7 +553,6 @@
 
           articles.forEach((article) => {
             const ref = db.collection("posts").doc();
-
             const title = article.title || "External news";
             const description =
               article.description ||
@@ -596,14 +581,14 @@
               userId: "system-news",
               location: {
                 latitude: article.latitude || 0,
-                longitude: article.longitude || 0
+                longitude: article.longitude || 0,
               },
               address: humanLocation,
               country: (article.country || "").toLowerCase(),
               external: true,
               imageUrl: article.image_url || "",
               categories: article.category || [],
-              sentiment: article.sentiment || ""
+              sentiment: article.sentiment || "",
             });
           });
 
@@ -676,11 +661,10 @@
             filterEndInput.value = "";
             currentFilter.start = null;
             currentFilter.end = null;
-
             resetPagination();
             loadPostsForAdmin();
           });
-        }
+        });
       });
     </script>
   </body>
