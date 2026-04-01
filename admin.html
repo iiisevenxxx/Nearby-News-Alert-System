@@ -104,8 +104,8 @@
 
       // --- Admin reference location for distance (Dahmi Kalan example) ---
       const ADMIN_REF_LOCATION = {
-        lat: 26.911, // yahan apna exact latitude daalo
-        lng: 75.642, // yahan apna exact longitude daalo
+        lat: 26.911, // your reference latitude
+        lng: 75.642, // your reference longitude
       };
 
       const EARTH_RADIUS_KM = 6371;
@@ -481,6 +481,7 @@
       });
 
       // --- NewsData import ---
+
       const NEWSDATA_API_KEY = "pub_6b1a67037a52456cb5fe42751cbbbed7";
 
       const buildHumanLocation = (article) => {
@@ -494,6 +495,22 @@
         if (country) parts.push(country);
         return parts.length ? parts.join(", ") : "World News";
       };
+
+      // Fix for article.country being string/array/object
+      function normalizeCountryField(country) {
+        if (!country) return "";
+        if (Array.isArray(country)) {
+          return (country[0] || "").toString().toLowerCase();
+        }
+        if (typeof country === "object") {
+          if (country.code)
+            return country.code.toString().toLowerCase();
+          if (country.name)
+            return country.name.toString().toLowerCase();
+          return "";
+        }
+        return country.toString().toLowerCase();
+      }
 
       async function import60RandomNews() {
         if (!NEWSDATA_API_KEY) {
@@ -584,7 +601,7 @@
                 longitude: article.longitude || 0,
               },
               address: humanLocation,
-              country: (article.country || "").toLowerCase(),
+              country: normalizeCountryField(article.country),
               external: true,
               imageUrl: article.image_url || "",
               categories: article.category || [],
